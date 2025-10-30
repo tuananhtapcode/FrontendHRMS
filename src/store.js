@@ -1,13 +1,14 @@
 import { legacy_createStore as createStore } from 'redux'
 
 const initialState = {
-  sidebarShow: true,
+  appStoreShow: false,
   theme: 'light',
 }
 
 const changeState = (state = initialState, { type, ...rest }) => {
   switch (type) {
     case 'set':
+      console.log(rest)
       return { ...state, ...rest }
     default:
       return state

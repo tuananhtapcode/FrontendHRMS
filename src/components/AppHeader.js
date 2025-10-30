@@ -1,6 +1,13 @@
-import React, { useEffect, useRef } from 'react'
-import { NavLink } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import {
+  cilApps,
+  cilBell,
+  cilContrast,
+  cilEnvelopeOpen,
+  cilList,
+  cilMoon,
+  cilSun,
+} from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 import {
   CContainer,
   CDropdown,
@@ -10,30 +17,22 @@ import {
   CHeader,
   CHeaderNav,
   CHeaderToggler,
-  CNavLink,
   CNavItem,
+  CNavLink,
   useColorModes,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilContrast,
-  cilEnvelopeOpen,
-  cilList,
-  cilMenu,
-  cilMoon,
-  cilSun,
-} from '@coreui/icons'
-
-import { AppBreadcrumb } from './index'
+import { useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { NavLink } from 'react-router-dom'
 import { AppHeaderDropdown } from './header/index'
+import { AppBreadcrumb } from './index'
 
 const AppHeader = () => {
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
   const dispatch = useDispatch()
-  const sidebarShow = useSelector((state) => state.sidebarShow)
+  const appStoreShow = useSelector((state) => state.appStoreShow)
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
@@ -46,10 +45,10 @@ const AppHeader = () => {
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
       <CContainer className="border-bottom px-4" fluid>
         <CHeaderToggler
-          onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
+          onClick={() => dispatch({ type: 'set', appStoreShow: !appStoreShow })}
           style={{ marginInlineStart: '-14px' }}
         >
-          <CIcon icon={cilMenu} size="lg" />
+          <CIcon icon={cilApps} size="lg" />
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>

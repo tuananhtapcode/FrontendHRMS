@@ -1,10 +1,8 @@
-import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-
 import { CSpinner, useColorModes } from '@coreui/react'
+import React, { Suspense, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 import './scss/style.scss'
-
 // We use those styles to show code examples, you should remove them in your application.
 import './scss/examples.scss'
 

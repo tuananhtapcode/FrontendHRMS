@@ -65,3 +65,29 @@ body {
     --cui-footer-bg: var(--cui-body-bg);
   }
 }
+
+.header.header-sticky {
+  z-index: 2000;
+}
+.sidebar-fixed, .sidebar-narrow-unfoldable, .sidebar-overlaid {
+  top: 114.33px;
+}
+
+.app-store {
+  --cui-sidebar-width: 36rem;
+}
+.app-store-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
+  padding: 16px;
+}
+.app-card {
+  flex: 1 1 120px;
+  max-width: 120px;
+}
+.app-icon {
+  aspect-ratio: 1 / 1;
+  width: 48px;
+}
