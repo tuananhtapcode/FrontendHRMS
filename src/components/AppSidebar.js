@@ -9,14 +9,20 @@ import {
 } from '@coreui/react'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 import { logo } from 'src/assets/brand/logo'
 import { sygnet } from 'src/assets/brand/sygnet'
-import navigation from '../_nav'
+
 import { AppSidebarNav } from './AppSidebarNav'
+import { navigationMap } from './navConfig'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
+
+  const { pathname } = useLocation()
+  const matchedPrefix = Object.keys(navigationMap).find((prefix) => pathname.startsWith(prefix))
+  const navigation = navigationMap[matchedPrefix] || navigationMap['']
 
   return (
     <CSidebar className="border-end" colorScheme="dark" position="fixed" unfoldable={unfoldable}>
