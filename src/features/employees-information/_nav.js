@@ -19,8 +19,8 @@ import React from 'react'
 const _nav = [
   {
     component: CNavItem,
-    name: 'System',
-    to: '/system/dashboard',
+    name: 'Tổng quan',
+    to: '/employees-information/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
   {

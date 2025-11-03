@@ -52,7 +52,10 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const Employee = React.lazy(() => import('./features/employee'))
 
+import employeesInformation from './features/employees-information/routes'
+
 const routes = [
+  ...employeesInformation,
   { path: '/', exact: true, name: 'Home' },
   { path: '/employee', name: 'Employee', element: Employee },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },

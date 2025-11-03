@@ -21,7 +21,9 @@ const AppSidebar = () => {
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
 
   const { pathname } = useLocation()
+  console.log(pathname)
   const matchedPrefix = Object.keys(navigationMap).find((prefix) => pathname.startsWith(prefix))
+  console.log(matchedPrefix)
   const navigation = navigationMap[matchedPrefix] || navigationMap['']
 
   return (

@@ -1,13 +1,22 @@
 import CIcon from '@coreui/icons-react'
 import { CCard, CCardBody, CContainer, CNavLink } from '@coreui/react'
 import PropTypes from 'prop-types'
+import { useDispatch, useSelector } from 'react-redux'
 import { NavLink } from 'react-router-dom'
 import 'simplebar-react/dist/simplebar.min.css'
 
 export const AppStoreNav = ({ items }) => {
+  const dispatch = useDispatch()
+
   const app = (item, index) => {
     return (
-      <CNavLink key={index} as={NavLink} to={item.to} className="app-card">
+      <CNavLink
+        key={index}
+        as={NavLink}
+        to={item.to}
+        className="app-card"
+        onClick={() => dispatch({ type: 'set', appStoreShow: false })}
+      >
         <CCard
           className="text-center hover-app"
           style={{

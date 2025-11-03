@@ -11,6 +11,10 @@ const AppContent = () => {
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
           {routes.map((route, idx) => {
+            if (!route.element) return null
+
+            const element = React.isValidElement(route.element) ? route.element : <route.element />
+
             return (
               route.element && (
                 <Route
@@ -18,7 +22,7 @@ const AppContent = () => {
                   path={route.path}
                   exact={route.exact}
                   name={route.name}
-                  element={<route.element />}
+                  element={element}
                 />
               )
             )
