@@ -1,11 +1,11 @@
 import { CCol, CRow } from '@coreui/react'
 
-import QuickStatsChart from '../components/QuickStatsChart'
-import HumanResourceStats from '../components/HumanResourceStats'
-import EmployeeStructureChart from '../components/EmployeeStructureChart'
-import ReminderList from '../components/ReminderList'
-import LineChart from '../components/LineChart'
-import BarChart from '../components/BarChart'
+import QuickStatsChart from '../components/dashboard/QuickStatsChart'
+import HumanResourceStats from '../components/dashboard/HumanResourceStats'
+import EmployeeStructureChart from '../components/dashboard/EmployeeStructureChart'
+import ReminderList from '../components/dashboard/ReminderList'
+import LineChart from '../components/dashboard/LineChart'
+import BarChart from '../components/dashboard/BarChart'
 
 const Dashboard = () => {
   return (

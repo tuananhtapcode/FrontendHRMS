@@ -1,0 +1,12 @@
+.customTable {
+  width: max-content; /* để bảng nở theo nội dung */
+  table-layout: auto; /* tự căn theo độ dài text */
+  th, td {
+    white-space: nowrap;
+  }
+}
+
+.required::after {
+  content: " *";
+  color: red;
+}
