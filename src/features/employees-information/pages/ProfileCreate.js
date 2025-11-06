@@ -3,13 +3,15 @@ import CIcon from '@coreui/icons-react'
 import { cilArrowLeft } from '@coreui/icons'
 import { useEffect, useState } from 'react'
 import UploadAvatar from '../components/profileCreate/UploadAvatar'
-import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import GeneralInfoForm from '../components/profileCreate/generalInfoForm'
 import AccountInfoForm from '../components/profileCreate/AccountInfoForm'
 import JobInfoForm from '../components/profileCreate/jobInfoForm'
+import { useNavigate } from 'react-router-dom'
 
 const ProfileCreate = () => {
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState({
     isUser: true,
     isEmployee: true,
@@ -50,7 +52,7 @@ const ProfileCreate = () => {
       <CRow className="align-items-center">
         {/* BÊN TRÁI */}
         <CCol className="d-flex align-items-center gap-2">
-          <CButton as="a" href="/#/employees-information/profile/view" color="light">
+          <CButton color="light" onClick={() => navigate(-1)}>
             <CIcon size="lg" icon={cilArrowLeft} />
           </CButton>
           <h5 className="mb-0 fw-bold">Thêm hồ sơ</h5>
