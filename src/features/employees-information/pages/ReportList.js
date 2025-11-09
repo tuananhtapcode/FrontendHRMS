@@ -1,12 +1,9 @@
-import {
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-} from '@coreui/react'
+import React from 'react'
+import { CCard, CCardBody, CCol, CRow, CButton } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilChartLine } from '@coreui/icons'
+import styles from './ReportList.module.scss' // import CSS module
 
 const reports = [
   {
@@ -67,26 +64,33 @@ const ReportList = () => {
   const navigate = useNavigate()
 
   return (
-    <>
-      <CTable hover responsive bordered>
-        <CTableHead>
-          <CTableRow>
-            <CTableHeaderCell>Tên báo cáo</CTableHeaderCell>
-          </CTableRow>
-        </CTableHead>
-        <CTableBody>
-          {reports.map((report, index) => (
-            <CTableRow
-              key={index}
+    <div className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <h4 className="fw-bold mb-4">Danh sách báo cáo</h4>
+
+      <CRow xs={{ cols: 1, gutter: 3 }} md={{ cols: 2 }} lg={{ cols: 3 }}>
+        {reports.map((report, index) => (
+          <CCol key={index}>
+            <CCard
+              className={`h-100 shadow-sm border-0 ${styles.hoverCard}`} // dùng CSS module
               onClick={() => navigate(report.to)}
-              style={{ cursor: 'pointer' }}
             >
-              <CTableDataCell>{report.name}</CTableDataCell>
-            </CTableRow>
-          ))}
-        </CTableBody>
-      </CTable>
-    </>
+              <CCardBody className="d-flex align-items-center gap-3">
+                <div className={styles.iconWrapper}>
+                  <CIcon icon={cilChartLine} size="lg" className="text-info" />
+                </div>
+                <div className="flex-grow-1">
+                  <h6 className="mb-0 fw-semibold">{report.name}</h6>
+                  <small className="text-muted">Nhấn để xem chi tiết</small>
+                </div>
+                <CButton color="info" variant="ghost" size="sm" shape="rounded-pill">
+                  →
+                </CButton>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        ))}
+      </CRow>
+    </div>
   )
 }
 

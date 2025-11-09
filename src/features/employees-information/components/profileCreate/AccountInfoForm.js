@@ -12,6 +12,8 @@ const AccountInfoForm = ({ formData, handleChange }) => {
           placeholder="Nhập email"
           value={formData.accountEmail}
           onChange={(e) => handleChange('accountEmail', e.target.value)}
+          type="email"
+          required
         />
       </CCol>
       <CCol xs={12}>

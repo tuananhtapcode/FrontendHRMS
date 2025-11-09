@@ -1,0 +1,18 @@
+.tableWrapper {
+  max-height: 70vh; // scrollable khi table cao
+  overflow-y: auto;
+}
+
+.customTable {
+  min-width: 1200px; // tránh table quá hẹp
+  th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  tr:hover {
+    background-color: #f1f3f5;
+    cursor: pointer;
+  }
+}

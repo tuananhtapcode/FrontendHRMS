@@ -6,7 +6,7 @@ const JobInfoForm = ({ formData, handleChange }) => {
   return (
     <>
       <h5 className="fw-bold">THÔNG TIN CÔNG VIỆC</h5>
-      <CForm className="row g-3">
+      <div className="row g-3">
         <CCol md={12}>
           <CFormInput
             id="inputJobPosition"
@@ -71,7 +71,7 @@ const JobInfoForm = ({ formData, handleChange }) => {
             onChange={(e) => handleChange('companyEmail', e.target.value)}
           />
         </CCol>
-      </CForm>
+      </div>
     </>
   )
 }

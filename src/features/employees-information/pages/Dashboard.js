@@ -24,17 +24,26 @@ const Dashboard = () => {
           <HumanResourceStats />
         </CCol>
       </CRow>
-      <CRow className="mb-4" xs={{ gutter: 4 }}>
-        <CCol sm={6} xl={4}>
-          <EmployeeStructureChart title="Cơ cấu nhân sự theo phòng ban" data={null} />
+      <CRow className="mb-4" xs={{ gutter: 4 }} style={{ alignItems: 'stretch' }}>
+        <CCol sm={6} xl={4} className="d-flex">
+          <EmployeeStructureChart
+            title="Cơ cấu nhân sự theo phòng ban"
+            data={null}
+            className="flex-fill w-100"
+          />
         </CCol>
-        <CCol sm={6} xl={4}>
-          <EmployeeStructureChart title="Thống kê hợp đồng theo loại" data={undefined} />
+        <CCol sm={6} xl={4} className="d-flex">
+          <EmployeeStructureChart
+            title="Thống kê hợp đồng theo loại"
+            data={undefined}
+            className="flex-fill w-100"
+          />
         </CCol>
-        <CCol>
-          <ReminderList />
+        <CCol className="d-flex">
+          <ReminderList className="flex-fill w-100" />
         </CCol>
       </CRow>
+
       <CRow className="mb-4" xs={{ gutter: 4 }}>
         <CCol sm={6}>
           <LineChart title="Biến động nhân sự" data={undefined} />
@@ -43,14 +52,6 @@ const Dashboard = () => {
           <BarChart title="Số lượng nhân sự" />
         </CCol>
       </CRow>
-      {/* <CRow className="mb-4" xs={{ gutter: 4 }}>
-        <CCol sm={6}>
-          <EmployeeStructureChart title="Cơ cấu nhân sự theo phòng ban" data={null} />
-        </CCol>
-        <CCol sm={6}>
-          <EmployeeStructureChart title="Thống kê hợp đồng theo loại" data={undefined} />
-        </CCol>
-      </CRow> */}
     </>
   )
 }

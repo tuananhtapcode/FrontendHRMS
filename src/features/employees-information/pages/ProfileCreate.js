@@ -1,7 +1,7 @@
-import { CButton, CCol, CContainer, CFormCheck, CRow } from '@coreui/react'
+import { CButton, CCol, CContainer, CForm, CFormCheck, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilArrowLeft } from '@coreui/icons'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import UploadAvatar from '../components/profileCreate/UploadAvatar'
 import 'react-datepicker/dist/react-datepicker.css'
 import GeneralInfoForm from '../components/profileCreate/generalInfoForm'
@@ -11,19 +11,22 @@ import { useNavigate } from 'react-router-dom'
 
 const ProfileCreate = () => {
   const navigate = useNavigate()
+  const formRef = useRef()
 
   const [formData, setFormData] = useState({
     isUser: true,
     isEmployee: true,
+
     employeeId: '',
     lastName: '',
     firstName: '',
     fullName: '',
-    address: '',
     dateOfBirth: new Date(),
     gender: 'Nam',
+    address: '',
     phoneNumber: '',
     personalEmail: '',
+
     jobPosition: '',
     status: 'Đang làm việc',
     probationaryDate: new Date(),
@@ -39,6 +42,17 @@ const ProfileCreate = () => {
       if (prev[field] === value) return prev
       return { ...prev, [field]: value }
     })
+  }
+
+  const handleAdd = () => {
+    const form = formRef.current
+    if (form && !form.checkValidity()) {
+      console.log('Form chưa hợp lệ!')
+      form.reportValidity()
+      return
+    }
+
+    console.log('Form hợp lệ')
   }
 
   console.log(formData)
@@ -60,7 +74,7 @@ const ProfileCreate = () => {
 
         {/* BÊN PHẢI */}
         <CCol xs="auto">
-          <CButton color="info" className="text-white fw-bold">
+          <CButton color="info" className="text-white fw-bold" onClick={handleAdd}>
             Thêm
           </CButton>
         </CCol>
@@ -91,15 +105,19 @@ const ProfileCreate = () => {
         </CCol>
       </CContainer>
 
-      <CContainer
+      <CForm
+        ref={formRef}
+        noValidate
+        className="needs-validation"
+        validated={true}
         style={{ backgroundColor: 'white', padding: 16, marginBottom: 16, marginTop: 16 }}
       >
         <UploadAvatar />
         <CRow>
-          <CCol>
+          <CCol className="position-relative">
             <GeneralInfoForm formData={formData} handleChange={handleChange} />
           </CCol>
-          <CCol>
+          {/* <CCol>
             {formData.isEmployee && (
               <CContainer style={{ marginBottom: 16 }}>
                 <JobInfoForm formData={formData} handleChange={handleChange} />
@@ -110,9 +128,9 @@ const ProfileCreate = () => {
                 <AccountInfoForm formData={formData} handleChange={handleChange} />
               </CContainer>
             )}
-          </CCol>
+          </CCol> */}
         </CRow>
-      </CContainer>
+      </CForm>
     </>
   )
 }

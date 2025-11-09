@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { getStyle } from '@coreui/utils'
 import { CCard, CCardBody, CCardSubtitle, CCardTitle } from '@coreui/react'
 
-const EmployeeStructureChart = ({ title }) => {
+const EmployeeStructureChart = ({ title, className }) => {
   const chartRef = useRef(null)
 
   useEffect(() => {
@@ -11,17 +11,14 @@ const EmployeeStructureChart = ({ title }) => {
       const chartInstance = chartRef.current
       if (chartInstance) {
         const { options } = chartInstance
-
         if (options.plugins?.legend?.labels) {
           options.plugins.legend.labels.color = getStyle('--cui-body-color')
         }
-
         chartInstance.update()
       }
     }
 
     document.documentElement.addEventListener('ColorSchemeChange', handleColorSchemeChange)
-
     return () => {
       document.documentElement.removeEventListener('ColorSchemeChange', handleColorSchemeChange)
     }
@@ -40,19 +37,28 @@ const EmployeeStructureChart = ({ title }) => {
   const options = {
     plugins: {
       legend: {
+        position: 'right', // hiển thị label bên phải
         labels: {
           color: getStyle('--cui-body-color'),
+          boxWidth: 20,
+          padding: 15,
         },
       },
+      tooltip: {
+        enabled: true,
+        mode: 'nearest',
+        intersect: false,
+      },
     },
+    maintainAspectRatio: false,
   }
 
   const today = new Date()
 
   return (
-    <CCard style={{ padding: 16 }}>
-      <CCardTitle>{title}</CCardTitle>
-      <CCardSubtitle className="mb-2 text-body-secondary">
+    <CCard className={`shadow-sm rounded-4 border-0 ${className}`} style={{ padding: 16 }}>
+      <CCardTitle className="fs-5 fw-bold mb-1">{title}</CCardTitle>
+      <CCardSubtitle className="mb-3 text-body-secondary fs-7">
         Tất cả đơn vị - Đến ngày {today.toLocaleDateString()}
       </CCardSubtitle>
       <CCardBody>
@@ -60,7 +66,7 @@ const EmployeeStructureChart = ({ title }) => {
           <CChart type="doughnut" data={data} options={options} ref={chartRef} />
         ) : (
           <div className="text-center text-muted py-5">Không có dữ liệu</div>
-        )}{' '}
+        )}
       </CCardBody>
     </CCard>
   )

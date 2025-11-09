@@ -6,11 +6,10 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
   return (
     <>
       <h5 className="fw-bold">THÔNG TIN CHUNG</h5>
-      <CForm className="row g-3">
-        {formData.isEmployee && (
+      <div className="row g-3">
+        {/* {formData.isEmployee && (
           <CCol md={12}>
             <CFormInput
-              type="email"
               id="inputEmployeeId"
               label={
                 <>
@@ -22,7 +21,7 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
               onChange={(e) => handleChange('employeeId', e.target.value)}
             />
           </CCol>
-        )}
+        )} */}
 
         <CCol md={6}>
           <CFormInput
@@ -35,6 +34,7 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
             placeholder="Nhập họ và đệm"
             value={formData.lastName}
             onChange={(e) => handleChange('lastName', e.target.value)}
+            required
           />
         </CCol>
 
@@ -49,6 +49,7 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
             placeholder="Nhập tên"
             value={formData.firstName}
             onChange={(e) => handleChange('firstName', e.target.value)}
+            required
           />
         </CCol>
 
@@ -83,7 +84,7 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
             label="Địa chỉ"
             placeholder="Nhập địa chỉ"
             value={formData.address}
-            onChange={(e) => handleChange('adress', e.target.value)}
+            onChange={(e) => handleChange('address', e.target.value)}
           />
         </CCol>
 
@@ -104,9 +105,13 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
             placeholder="Nhập email"
             value={formData.personalEmail}
             onChange={(e) => handleChange('personalEmail', e.target.value)}
+            required
+            type="email"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            feedbackInvalid="Email không hợp lệ"
           />
         </CCol>
-      </CForm>
+      </div>
     </>
   )
 }

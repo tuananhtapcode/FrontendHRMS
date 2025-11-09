@@ -1,6 +1,6 @@
-import { CButton, CCol, CRow } from '@coreui/react'
+import { CButton, CCol, CRow, CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilArrowLeft } from '@coreui/icons'
+import { cilArrowLeft, cilCloudDownload } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import { EmployeeTable } from '../../components/common/MyComponents'
 import { ReportArgument } from './ReportArgument'
@@ -9,48 +9,55 @@ const ReportBase = ({ title, ArgChildren, dataTable }) => {
   const navigate = useNavigate()
 
   return (
-    <>
-      <CRow className="align-items-center">
-        {/* BÊN TRÁI */}
+    <div className="p-3" style={{ backgroundColor: '#f5f6fa', minHeight: '100vh' }}>
+      {/* HEADER */}
+      <CRow className="align-items-center mb-3">
         <CCol className="d-flex align-items-center gap-2">
-          <CButton color="light" onClick={() => navigate(-1)}>
+          <CButton
+            color="light"
+            onClick={() => navigate(-1)}
+            className="shadow-sm border-0"
+            title="Quay lại"
+          >
             <CIcon icon={cilArrowLeft} />
           </CButton>
-          <h5 className="mb-0 fw-bold">{title}</h5>
+          <h5 className="mb-0 fw-bold text-dark">{title}</h5>
         </CCol>
 
-        {/* BÊN PHẢI */}
         <CCol xs="auto">
-          <CButton color="info" className="text-white fw-bold">
+          <CButton
+            color="info"
+            className="text-white fw-semibold shadow-sm d-flex align-items-center gap-2"
+          >
+            <CIcon icon={cilCloudDownload} />
             Xuất báo cáo
           </CButton>
         </CCol>
       </CRow>
-      <CRow className="d-flex" style={{ gap: '12px' }}>
-        <CCol md={3} style={{ backgroundColor: 'white' }}>
-          <ReportArgument>
-            <ArgChildren />
-          </ReportArgument>
+
+      {/* BODY */}
+      <CRow className="g-3">
+        {/* SIDEBAR ARGUMENT */}
+        <CCol md={3}>
+          <CCard className="h-100 shadow-sm border-0">
+            <CCardBody>
+              <ReportArgument>
+                <ArgChildren />
+              </ReportArgument>
+            </CCardBody>
+          </CCard>
         </CCol>
 
-        <CCol
-          style={{
-            width: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100vh',
-            backgroundColor: 'white',
-          }}
-        >
-          {/* <CRow style={{ flex: 2, marginBottom: 16 }}>
-            <EmployeeTable />
-          </CRow> */}
-          <CRow style={{ flex: 1 }}>
-            <EmployeeTable data={dataTable} />
-          </CRow>
+        {/* MAIN TABLE */}
+        <CCol style={{ width: 1 }}>
+          <CCard className="h-100 shadow-sm border-0">
+            <CCardBody>
+              <EmployeeTable data={dataTable} />
+            </CCardBody>
+          </CCard>
         </CCol>
       </CRow>
-    </>
+    </div>
   )
 }
 

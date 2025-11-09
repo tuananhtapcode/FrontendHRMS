@@ -1,0 +1,21 @@
+.hoverCard {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-radius: 8px;
+}
+
+.hoverCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(13, 110, 253, 0.1); /* bg-info bg-opacity-10 */
+  flex-shrink: 0; /* quan trọng: không bị co nhỏ */
+}

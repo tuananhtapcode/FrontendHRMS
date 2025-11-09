@@ -29,7 +29,7 @@ const HumanResourceStats = () => {
 
   return (
     <>
-      <CCard>
+      <CCard className="shadow-sm rounded-4 border-0">
         <CCardBody>
           <CCardTitle>Tổng số nhân viên</CCardTitle>
           <CCardText className="text-center fs-3 fw-bold">1000</CCardText>

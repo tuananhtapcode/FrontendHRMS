@@ -1,14 +1,8 @@
-import {
-  CButton,
-  CCol,
-  CDropdown,
-  CDropdownItem,
-  CDropdownMenu,
-  CDropdownToggle,
-  CRow,
-} from '@coreui/react'
 import { useState } from 'react'
-import { EmployeeTable } from '../components/common/MyComponents'
+import { CRow, CCol, CButton, CFormInput, CCard, CCardBody } from '@coreui/react'
+import { cilPlus } from '@coreui/icons'
+import { EmployeeTable, MyDropdown } from '../components/common/MyComponents'
+import CIcon from '@coreui/icons-react'
 
 const data = [
   {
@@ -93,51 +87,62 @@ const data = [
   },
 ]
 
-const ProfileView = () => {
-  const dropdownItems = [
-    'Tất cả nhân viên',
-    'Đang làm việc',
-    'Đã nghỉ việc',
-    'Thử việc',
-    'Tiếp nhận tuần này',
-    'Chưa có hợp đồng',
-  ]
+const dropdownItems = [
+  'Tất cả nhân viên',
+  'Đang làm việc',
+  'Đã nghỉ việc',
+  'Thử việc',
+  'Tiếp nhận tuần này',
+  'Chưa có hợp đồng',
+]
 
+const ProfileView = () => {
   const [selectOption, setSelectOption] = useState(dropdownItems[0])
+  const [searchText, setSearchText] = useState('')
+
+  // Filter dữ liệu theo dropdown + search
+  const filteredData = data.filter(
+    (item) =>
+      (selectOption === 'Tất cả nhân viên' || item.laborStatus === selectOption) &&
+      (item.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.id.toLowerCase().includes(searchText.toLowerCase())),
+  )
 
   return (
-    <>
-      <CRow>
-        <CCol xs="auto" className="me-auto">
-          <CDropdown>
-            <CDropdownToggle size="lg" className="fw-bold">
-              {selectOption}
-            </CDropdownToggle>
-            <CDropdownMenu>
-              {dropdownItems.map((item, index) => {
-                return (
-                  <CDropdownItem key={index} onClick={() => setSelectOption(item)}>
-                    {item}
-                  </CDropdownItem>
-                )
-              })}
-            </CDropdownMenu>
-          </CDropdown>
-        </CCol>
-        <CCol xs="auto">
-          <CButton
-            as="a"
-            color="info"
-            className="text-white fw-bold"
-            role="button"
-            href="/#/employees-information/profile/create"
-          >
-            Thêm
-          </CButton>
-        </CCol>
-      </CRow>
-      <EmployeeTable data={data} />
-    </>
+    <CCard className="p-3 shadow-sm">
+      <CCardBody>
+        <CRow className="align-items-center mb-3" style={{ gap: '12px' }}>
+          {/* Dropdown + Search */}
+          <CCol md={4} sm={12}>
+            <MyDropdown
+              title="Trạng thái nhân viên"
+              defaultValue={selectOption}
+              items={dropdownItems}
+              handleClick={setSelectOption}
+            />
+          </CCol>
+          <CCol md={4} sm={12}>
+            <CFormInput
+              placeholder="Tìm theo tên hoặc mã NV..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </CCol>
+          <CCol xs="auto">
+            <CButton
+              color="info"
+              className="text-white fw-bold d-flex align-items-center gap-1"
+              href="/#/employees-information/profile/create"
+            >
+              <CIcon icon={cilPlus} /> Thêm
+            </CButton>
+          </CCol>
+        </CRow>
+
+        {/* Table */}
+        <EmployeeTable data={filteredData} />
+      </CCardBody>
+    </CCard>
   )
 }
 
