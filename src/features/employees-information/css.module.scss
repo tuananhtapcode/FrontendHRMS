@@ -11,3 +11,44 @@
   content: " *";
   color: red;
 }
+
+.hoverCard {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-radius: 8px;
+}
+
+.hoverCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(13, 110, 253, 0.1); /* bg-info bg-opacity-10 */
+  flex-shrink: 0; /* quan trọng: không bị co nhỏ */
+}
+
+.tableWrapper {
+  max-height: 70vh; // scrollable khi table cao
+  overflow-y: auto;
+}
+
+.customTable {
+  min-width: 1200px; // tránh table quá hẹp
+  th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  tr:hover {
+    background-color: #f1f3f5;
+    cursor: pointer;
+  }
+}

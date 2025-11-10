@@ -62,7 +62,6 @@ const ReminderList = ({ className }) => {
         </CListGroup>
       </CCard>
 
-      {/* Fullscreen Modal */}
       <CModal
         visible={visible}
         onClose={() => setVisible(false)}

@@ -1,9 +1,8 @@
-import React from 'react'
 import { CCard, CCardBody, CCol, CRow, CButton } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
 import { cilChartLine } from '@coreui/icons'
-import styles from './ReportList.module.scss' // import CSS module
+import styles from '../css.module.scss'
 
 const reports = [
   {

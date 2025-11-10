@@ -91,7 +91,7 @@ const GeneralInfoForm = ({ formData, handleChange }) => {
         <CCol md={12}>
           <CFormInput
             id="inputPhoneNumber"
-            label="Điên thoại di động"
+            label="Điện thoại di động"
             placeholder="Nhập số điện thoại"
             value={formData.phoneNumber}
             onChange={(e) => handleChange('phoneNumber', e.target.value)}

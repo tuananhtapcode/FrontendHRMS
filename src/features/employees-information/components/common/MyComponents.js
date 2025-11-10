@@ -1,5 +1,5 @@
 import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle, CTable } from '@coreui/react'
-import style from '../../css.module.scss'
+import styles from '../../css.module.scss'
 import CIcon from '@coreui/icons-react'
 import { cilFilter } from '@coreui/icons'
 
@@ -85,7 +85,7 @@ const EmployeeTable = ({ data }) => {
       striped
       bordered
       hover
-      className={style.customTable}
+      className={styles.customTable}
     />
   )
 }
