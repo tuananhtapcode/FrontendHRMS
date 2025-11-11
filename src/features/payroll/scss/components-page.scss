@@ -1,0 +1,140 @@
+/* ========= ComponentsPage (Thành phần lương) ========= */
+.payroll-components {
+  /* Header */
+  .pc-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .5rem 0 1rem;
+
+    .left {
+      display: flex; align-items: center; gap: 1rem;
+
+      .title {
+        font-size: 1.125rem; font-weight: 700;
+        color: var(--cui-emphasis-color);
+        white-space: nowrap;
+      }
+
+      .filters {
+        display: flex; align-items: center; gap: .5rem;
+
+        .search {
+          position: relative; width: 280px; max-width: 40vw;
+
+          .c-icon, svg {
+            position: absolute; left: .5rem; top: 50%;
+            transform: translateY(-50%); opacity: .6; pointer-events: none;
+          }
+
+          .form-control {
+            height: 32px; padding-left: 2rem; font-size: .875rem; border-radius: .5rem;
+          }
+        }
+
+        .form-select {
+          min-width: 180px; height: 32px; font-size: .875rem; border-radius: .5rem;
+        }
+
+        .btn {
+          height: 32px; line-height: 30px; border-radius: .5rem; font-weight: 500;
+        }
+      }
+    }
+
+    .right .btn {
+      height: 36px; font-weight: 600; border-radius: .5rem;
+      box-shadow: 0 1px 0 rgba(0,0,0,.04);
+    }
+  }
+
+  /* Card + Table */
+  .pc-table {
+    border-radius: .75rem; overflow: hidden;
+
+    .card-header{
+      padding: .5rem 1rem; font-size: .875rem; color: var(--cui-secondary-color);
+      background: var(--cui-tertiary-bg) !important; border-bottom: 1px solid var(--cui-border-color);
+    }
+
+    .card-body { padding: 0 }
+
+    table.table {
+      margin: 0; font-size: .875rem;
+
+      thead th{
+        position: sticky; top: 0; z-index: 1;
+        background: var(--cui-tertiary-bg);
+        color: var(--cui-secondary-color);
+        font-weight: 600; white-space: nowrap;
+        padding: .6rem .75rem; border-bottom: 1px solid var(--cui-border-color);
+      }
+
+      tbody td{
+        padding: .6rem .75rem; vertical-align: middle; white-space: nowrap;
+      }
+
+      tbody tr:hover{ background: color-mix(in oklab, var(--cui-primary), #fff 94%) }
+
+      th.w-1, td.w-1 { width: 32px }
+      td.w-1 input[type='checkbox']{ margin: 0 }
+
+      td .text-primary, td.text-primary {
+        color: var(--cui-primary) !important; font-weight: 500;
+      }
+    }
+
+    /* CBadge */
+    .badge, .cbadge{
+      border-radius: 999px !important; font-size: .75rem; padding: .35rem .6rem;
+    }
+  }
+
+  /* Pagination */
+  .pc-pagination{
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .75rem 1rem; background: var(--cui-body-bg);
+    border-top: 1px solid var(--cui-border-color);
+
+    .small{ font-size: .8125rem }
+
+    .badge{
+      margin-left: .5rem; background: var(--cui-tertiary-bg);
+      color: var(--cui-emphasis-color); border: 1px solid var(--cui-border-color);
+      border-radius: .5rem; padding: .25rem .5rem; font-weight: 500;
+    }
+
+    .nav{
+      display: flex; align-items: center; gap: .5rem;
+
+      .page{ min-width: 24px; text-align: center; font-weight: 600 }
+
+      button{
+        width: 28px; height: 28px; padding: 0; line-height: 1;
+        border: 1px solid var(--cui-border-color);
+        background: var(--cui-body-bg); border-radius: .5rem; font-size: 1rem;
+        &:hover:not(:disabled){ background: var(--cui-tertiary-bg) }
+        &:disabled{ opacity: .5; cursor: not-allowed }
+      }
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px){
+    .pc-header .filters .search{ width: 240px }
+    .pc-header .filters .form-select{ min-width: 160px }
+  }
+  @media (max-width: 992px){
+    .pc-header{ align-items: flex-start }
+    .pc-header .left{ flex-direction: column; align-items: stretch; gap: .75rem }
+    .pc-header .filters{ flex-wrap: wrap }
+    .pc-pagination{ flex-direction: column; gap: .5rem; align-items: flex-start }
+  }
+}
+
+// /* Dark mode riêng trang */
+// @include color-mode(dark){
+//   .payroll-components{
+//     .pc-table thead th{ background: var(--cui-secondary-bg) }
+//     .pc-table tbody tr:hover{ background: color-mix(in oklab, var(--cui-primary), transparent 88%) }
+//     .pc-pagination{ background: var(--cui-body-bg) }
+//   }
+// }

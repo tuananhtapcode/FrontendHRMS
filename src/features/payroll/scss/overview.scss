@@ -1,0 +1,128 @@
+@use "sass:color";
+
+/* ===== Palette & tokens (chuẩn theo UI gốc) ===== */
+$bg-app:        #f5f7f8;   // nền toàn trang
+$bg-card:       #ffffff;   // panel/card
+$bg-header:     #f7f8f9;   // header panel
+$border-soft:   #e6e7e9;   // viền mảnh
+$border-dashed: #e9edef;   // viền dashed empty
+$text-1:        #1f2d3d;   // title
+$text-2:        #516174;   // mô tả
+$text-3:        #8a98a9;   // phụ
+$accent:        #2eb85c;   // xanh chủ đạo (CoreUI success)
+$shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
+
+/* ===== Trang tổng quan tiền lương ===== */
+.payroll-ovw {
+  background: $bg-app;   
+  padding: 12px 12px 24px;
+
+  /* Tabs trên cùng */
+  .ovw-tabs {
+    margin-bottom: 12px;
+
+    .nav-tabs {
+      border-bottom: 0;
+      gap: 8px;
+    }
+
+    .nav-link {
+      border: 1px solid $border-soft !important;
+      background: $bg-card;
+      color: $text-1;
+      border-radius: 8px;
+      padding: 6px 12px;
+      line-height: 1.1;
+      box-shadow: $shadow-sm;
+
+      &.active {
+        border-color: color.scale($accent, $lightness: 28%) !important;
+        background: rgba($accent, 0.08);
+        color: color.scale($accent, $lightness: -10%);
+        font-weight: 600;
+      }
+    }
+  }
+
+  /* Cards KPI đầu trang */
+  .summary-card {
+    background: $bg-card;
+    border: 1px solid $border-soft;
+    border-radius: 12px;
+    box-shadow: $shadow-sm;
+
+    .text-medium-emphasis { color: $text-2; }
+    .text-secondary { color: $text-3 !important; }
+    .fs-4 { font-size: 18px !important; }
+  }
+
+  /* Panel (các ô lớn) */
+  .panel {
+    margin-bottom: 12px;
+    border: 1px solid $border-soft !important;
+    border-radius: 12px !important;
+    background: $bg-card;
+    box-shadow: $shadow-sm;
+
+    .card-header,
+    .bg-light {
+      background: $bg-header !important;
+      border-bottom: 1px solid $border-soft;
+      padding: 12px 16px;
+    }
+
+    .fw-semibold { color: $text-1; font-weight: 600; }
+    .text-medium-emphasis { color: $text-3 !important; }
+    .card-body { padding: 14px 16px; }
+  }
+
+  /* Empty state */
+  .empty {
+    min-height: 150px;
+    border: 1.5px dashed $border-dashed;
+    border-radius: 12px;
+    background: #fbfcfd;
+    display: grid;
+    place-items: center;
+    color: $text-3;
+
+    .empty-ico { font-size: 26px; margin-bottom: 6px; color: $accent; }
+    .empty-txt { font-size: 13px; }
+  }
+
+  /* Gauge: chữ màu tối, progress xanh */
+  svg text { fill: $text-1; }
+  .gauge {
+    .small { color: $text-2; }
+  }
+
+  /* Cột phải – Lời nhắc */
+  .ovw-reminders { display: grid; gap: 10px; }
+
+  .rem-item {
+    display: flex; gap: 10px; align-items: flex-start;
+
+    .rem-dot { 
+      width: 10px; height: 10px; border-radius: 999px; 
+      margin-top: 6px; background: #6c757d; 
+    }
+
+    .rem-title { font-size: 13px; font-weight: 600; color: $text-1; }
+    .rem-desc  { font-size: 12px; color: $text-3; }
+  }
+
+  .rem-warning .rem-dot { background: #f9b115; }
+  .rem-info    .rem-dot { background: #39a8ff; }
+  .rem-success .rem-dot { background: $accent; }
+
+  /* Bo góc + bóng mềm */
+  .card, .summary-card, .panel { border-radius: 12px; box-shadow: $shadow-sm; }
+}
+
+/* ===== Responsive (dưới 1280px) ===== */
+@media (max-width: 1280px) {
+  .payroll-ovw {
+    padding: 8px;
+    .summary-card { margin-bottom: 10px; }
+  }
+}

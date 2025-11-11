@@ -50,11 +50,11 @@ const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
-const Employee = React.lazy(() => import('./features/employee'))
+const Employee = React.lazy(()=> import('./features/employee/index'))
+const PayrollModule = React.lazy(() => import('./features/payroll'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/employee', name: 'Employee', element: Employee },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
@@ -99,6 +99,7 @@ const routes = [
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/payroll/*', name: 'Payroll', element: PayrollModule}
 ]
 
 export default routes
