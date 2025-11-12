@@ -55,9 +55,11 @@ const Employee = React.lazy(() => import('./features/employee'))
 import employeesInformationRoutes from './features/employees-information/routes'
 import systemRoutes from './features/system/routes'
 
+import employeePagesRoutes from './views/pages/employeePages/routes'
 const routes = [
   ...employeesInformationRoutes,
   ...systemRoutes,
+  ...employeePagesRoutes,
   { path: '/', exact: true, name: 'Home' },
   { path: '/employee', name: 'Employee', element: Employee },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },

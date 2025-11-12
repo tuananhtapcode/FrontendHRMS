@@ -19,18 +19,82 @@ import {
   CTableRow,
 } from '@coreui/react'
 import { useRef, useState } from 'react'
-import { fields } from '../components/companyInfoFields'
+// import api from '../../../api/api'
 
-const CompanyInfo = () => {
+const fields = [
+  {
+    key: 'fullName',
+    label: (
+      <>
+        Tên đầy đủ <span style={{ color: 'red' }}>*</span>
+      </>
+    ),
+    placeholder: 'Nhập họ và tên',
+    required: true,
+  },
+  {
+    key: 'gender',
+    type: 'select',
+    label: (
+      <>
+        Giới tính <span style={{ color: 'red' }}>*</span>
+      </>
+    ),
+    options: [
+      { label: 'Nam', value: 'Nam' },
+      { label: 'Nữ', value: 'Nữ' },
+      { label: 'U I A Cat', value: 'U I A Cat' },
+    ],
+  },
+  {
+    key: 'taxCode',
+    label: (
+      <>
+        Ngày sinh <span style={{ color: 'red' }}>*</span>
+      </>
+    ),
+    required: true,
+    feedbackInvalid: 'Không được để trống',
+  },
+  {
+    key: 'address',
+    label: (
+      <>
+        {' '}
+        Địa chỉ <span style={{ color: 'red' }}>*</span>{' '}
+      </>
+    ),
+    placeholder: 'Nhập địa chỉ',
+    required: true,
+  },
+  {
+    key: 'phoneNumber',
+    label: (
+      <>
+        Điện thoại <span style={{ color: 'red' }}>*</span>
+      </>
+    ),
+    placeholder: 'Nhập số điện thoại',
+    required: true,
+    pattern: '^(0|84)(3|5|7|8|9)[0-9]{8}$',
+  },
+  {
+    key: 'email',
+    type: 'email',
+    label: 'Email',
+    placeholder: 'Nhập email',
+  },
+]
+
+const Profile = () => {
   const [visible, setVisible] = useState(false)
   const [data, setData] = useState([
-    { key: 'fullName', label: 'Tên đầy đủ', value: 'Lam Bai Tap' },
-    { key: 'businessType', label: 'Loại hình kinh doanh', value: 'Doanh nghiệp' },
-    { key: 'taxCode', label: 'Mã số thuế', value: '0123456789-223' },
-    { key: 'legalRepresentative', label: 'Người đại diện pháp luật', value: 'Tran Van Giap' },
-    { key: 'address', label: 'Địa chỉ', value: '123' },
-    { key: 'phoneNumber', label: 'Điện thoại', value: '0323456789' },
-    { key: 'email', label: 'Email', value: 'ziptghz@gmail.com' },
+    { key: 'fullName', value: 'Lam Bai Tap' },
+    { key: 'gender', value: 'Nam' },
+    { key: 'dateOfBirth', value: '0123456789-223' },
+    { key: 'email', value: 'ziptghz@gmail.com' },
+    { key: 'phoneNumber', value: '0323456789' },
+    { key: 'address', value: '123' },
   ])
   const [form, setForm] = useState({})
   const [posting, setPosting] = useState(false)
@@ -81,7 +145,7 @@ const CompanyInfo = () => {
       <CCard className="shadow-sm border-0">
         <CCardHeader className="d-flex justify-content-between align-items-center bg-white border-bottom-0">
           <div>
-            <h2 className="mb-1 fw-semibold">Thông tin công ty</h2>
+            <h2 className="mb-1 fw-semibold">Thông tin nhân viên</h2>
             <small className="text-muted">
               Khai báo và cập nhật thông tin để hệ thống tự động lấy lên các báo cáo, tài liệu...
             </small>
@@ -94,15 +158,15 @@ const CompanyInfo = () => {
         <CCardBody>
           <CTable striped bordered hover responsive className="align-middle">
             <CTableBody>
-              {data.map((item, index) => (
+              {fields.map((field, index) => (
                 <CTableRow key={index}>
                   <CTableHeaderCell
                     style={{ width: '30%', whiteSpace: 'nowrap' }}
                     className="fw-semibold bg-light"
                   >
-                    {item.label}
+                    {field.label}
                   </CTableHeaderCell>
-                  <CTableDataCell>{item.value}</CTableDataCell>
+                  <CTableDataCell>{data[index].value}</CTableDataCell>
                 </CTableRow>
               ))}
             </CTableBody>
@@ -160,4 +224,4 @@ const CompanyInfo = () => {
   )
 }
 
-export default CompanyInfo
+export default Profile
