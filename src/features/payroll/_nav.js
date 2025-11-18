@@ -88,7 +88,7 @@ const _nav = [
     icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
     items: [
       { component: CNavItem, name: 'Tổng thu nhập nhân viên',    to: '/payroll/reports/employee-income' },
-      { component: CNavItem, name: 'Thống kê lương theo giờ',    to: '/payroll/reports/hourly-statistics' },
+      { component: CNavItem, name: 'Thống kê lương thời gian',    to: '/payroll/reports/hourly-statistics' },
       { component: CNavItem, name: 'Cơ cấu thu nhập',            to: '/payroll/reports/income-structure' },
       { component: CNavItem, name: 'Tổng hợp chi phí lương',     to: '/payroll/reports/cost-summary' },
       { component: CNavItem, name: 'Tổng hợp chi trả lương',     to: '/payroll/reports/payment-summary' },

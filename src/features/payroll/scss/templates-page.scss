@@ -1,0 +1,78 @@
+.templates-page {
+  // 1. Header
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  // 2. Filter Bar
+  .filter-card {
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .filter-search {
+        max-width: 300px;
+      }
+
+      .filter-select {
+        max-width: 200px;
+      }
+
+      .filter-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 1rem;
+        cursor: pointer;
+        color: var(--cui-gray-600);
+      }
+    }
+  }
+
+  // 3. Content Card & Empty State
+  .content-card {
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--cui-gray-500);
+
+      .empty-icon {
+        color: var(--cui-gray-300);
+      }
+    }
+
+    .table {
+      th,
+      td {
+        vertical-align: middle;
+      }
+    }
+  }
+
+  // 4. Pagination Footer
+  .pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--cui-gray-600);
+    font-size: 0.875rem;
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+
+      .btn {
+        color: var(--cui-gray-600);
+        &:disabled {
+          color: var(--cui-gray-400);
+        }
+      }
+    }
+  }
+}

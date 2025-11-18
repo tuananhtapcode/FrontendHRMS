@@ -1,0 +1,74 @@
+.template-form-page {
+  display: flex;
+  flex-direction: column;
+  // Sử dụng 100% chiều cao của viewport trừ đi chiều cao của header chính (nếu có)
+  // Hoặc bạn có thể set cứng chiều cao, ví dụ: height: calc(100vh - 60px);
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--cui-gray-100);
+
+  // 1. Header (Hủy / Lưu)
+  .page-form-header {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--cui-white);
+    border-bottom: 1px solid var(--cui-border-color);
+    flex-shrink: 0; // Không co lại
+  }
+
+  // 2. Content (Form)
+  .form-content {
+    flex-grow: 1; // Lấp đầy không gian còn lại
+    overflow-y: auto; // Cho phép cuộn
+    padding: 1rem 1.5rem;
+  }
+
+  // CSS cho phần header của card "Thành phần lương"
+  .components-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .c-input-group {
+      width: auto; // Thu nhỏ theo nội dung
+    }
+  }
+
+  // CSS cho các cell đặc biệt trong bảng
+  .table {
+    .code-cell {
+      background-color: var(--cui-gray-200);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+
+    .formula-cell {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+
+      .operator {
+        color: var(--cui-danger);
+      }
+
+      .variable {
+        color: var(--cui-primary);
+        margin: 0 0.2rem;
+      }
+    }
+  }
+
+  // 3. Footer (Xem trước / Thêm)
+  .page-form-footer {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--cui-white);
+    border-top: 1px solid var(--cui-border-color);
+    flex-shrink: 0; // Không co lại
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+}

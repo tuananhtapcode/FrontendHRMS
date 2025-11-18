@@ -1,0 +1,234 @@
+.employee-income-report-page {
+  // 1. Header
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: var(--cui-border-radius-lg);
+    border: 1px solid var(--cui-border-color-translucent);
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+
+      .icon-btn {
+        border-color: var(--cui-gray-300);
+        color: var(--cui-gray-600);
+        padding: 0.375rem 0.75rem;
+        background-color: #fff;
+        
+        &:hover {
+          background-color: var(--cui-gray-100);
+        }
+
+        &.active { 
+           background-color: var(--cui-success);
+           border-color: var(--cui-success);
+           color: white !important;
+           
+           .c-icon {
+             color: white !important;
+           }
+        }
+      }
+    }
+  }
+
+  // 2. Tabs
+  .report-tabs {
+    margin-top: 1rem;
+    .nav-tabs {
+      border-bottom: 1px solid var(--cui-border-color);
+      
+      .nav-item {
+        .nav-link {
+          border: none;
+          background: transparent;
+          color: var(--cui-gray-600);
+          font-weight: 500;
+          padding: 0.75rem 1.5rem;
+          border-bottom: 2px solid transparent;
+          transition: all 0.2s;
+          
+          &.active {
+            color: var(--cui-success);
+            border-bottom-color: var(--cui-success);
+            font-weight: 600;
+          }
+          
+          &:hover:not(.active) {
+             color: var(--cui-success);
+             opacity: 0.8;
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Table & Empty State
+  .content-card {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    
+    .report-table {
+        background: #fff;
+        
+        th { 
+            background-color: var(--cui-gray-100); 
+            font-weight: 600; 
+            font-size: 0.875rem; 
+            white-space: nowrap;
+            padding: 1rem;
+            border-bottom: 1px solid var(--cui-border-color);
+        }
+        
+        td {
+            padding: 0.75rem 1rem;
+        }
+
+        .empty-state-cell { 
+            border-bottom: none; 
+            padding: 0; 
+        }
+    }
+
+    .empty-state {
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      color: var(--cui-gray-500); 
+      min-height: 400px;
+      background: #fff;
+      border-bottom: 1px solid var(--cui-border-color-translucent);
+
+      .empty-icon { 
+          color: var(--cui-success); 
+          opacity: 0.5; 
+          margin-bottom: 1rem;
+      }
+    }
+
+    .report-footer {
+        background: #fff;
+        border-bottom-left-radius: var(--cui-border-radius-lg);
+        border-bottom-right-radius: var(--cui-border-radius-lg);
+    }
+  }
+}
+
+// 4. Sidebar Bộ lọc (Offcanvas) - SỬA LỖI Ở ĐÂY
+// Ta sử dụng !important để ghi đè style mặc định của Bootstrap/CoreUI
+.filter-sidebar {
+    width: 320px !important;
+    border-left: 1px solid var(--cui-border-color) !important;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.05) !important;
+    
+    // QUAN TRỌNG: Định vị sidebar
+    position: fixed !important;
+    top: 120px !important; // Đẩy xuống dưới Header của App + Header của trang (tùy chỉnh số này nếu cần)
+    right: 0 !important;
+    bottom: 0 !important;
+    height: auto !important; // Để nó tự tính toán chiều cao còn lại
+    max-height: calc(100vh - 120px) !important; // Giới hạn chiều cao
+    z-index: 1040 !important; // Cao hơn nội dung nhưng thấp hơn Modal (1050)
+
+    // Bỏ hiệu ứng backdrop mờ của offcanvas mặc định nếu cần thiết kế trong suốt
+    &.offcanvas-end {
+        transform: translateX(100%); // Mặc định ẩn
+        visibility: visible; 
+    }
+    
+    &.show {
+        transform: translateX(0) !important; // Hiện ra
+    }
+
+    .offcanvas-header { 
+        padding: 1rem 1.5rem; 
+        border-bottom: 1px solid var(--cui-border-color-translucent);
+        
+        .offcanvas-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+    }
+
+    .offcanvas-body { 
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        
+        .position-relative {
+            .form-control {
+                padding-left: 2.5rem; 
+            }
+        }
+        
+        .filter-list {
+            margin-top: 1rem;
+            overflow-y: auto;
+            
+            .form-check {
+                margin-bottom: 0.75rem;
+                
+                .form-check-input:checked {
+                    background-color: var(--cui-success);
+                    border-color: var(--cui-success);
+                }
+            }
+        }
+
+        .filter-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--cui-border-color-translucent);
+        }
+    }
+}
+
+// 5. Modal Cài đặt (Tùy chỉnh hiển thị)
+.settings-modal {
+    .modal-dialog {
+        max-width: 450px; 
+        
+        .modal-content {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+
+            .modal-header {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .modal-body {
+                padding: 1rem 1.5rem;
+
+                .form-label {
+                    font-weight: 600;
+                    color: var(--cui-body-color);
+                }
+
+                .column-list {
+                    max-height: 300px;
+                    overflow-y: auto;
+                    padding-right: 0.5rem;
+
+                    &::-webkit-scrollbar { width: 4px; }
+                    &::-webkit-scrollbar-thumb { background-color: #dee2e6; border-radius: 4px; }
+                }
+            }
+            
+            .modal-footer {
+                border-top: 1px solid var(--cui-border-color-translucent);
+                padding: 0.75rem 1.5rem;
+                background-color: var(--cui-gray-100);
+                border-bottom-left-radius: 8px;
+                border-bottom-right-radius: 8px;
+            }
+        }
+    }
+}

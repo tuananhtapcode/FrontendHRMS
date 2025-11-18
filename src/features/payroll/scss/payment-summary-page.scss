@@ -1,0 +1,38 @@
+// File style này chỉ dành riêng cho trang Tổng hợp chi trả
+.salary-summary-page {
+  // 1. Header
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  // 2. Content Card & Empty State
+  .content-card {
+    border-radius: var(--cui-border-radius-lg);
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 2rem; // Tăng padding cho khác biệt
+      text-align: center;
+
+      .empty-icon {
+        font-size: 5rem; // Icon to hơn
+        color: var(--cui-gray-300);
+      }
+
+      h5 {
+        margin-top: 1.5rem;
+        font-weight: 600;
+        color: var(--cui-gray-800);
+      }
+
+      p {
+        max-width: 400px;
+      }
+    }
+  }
+}

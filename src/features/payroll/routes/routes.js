@@ -1,18 +1,4 @@
-// import { Route, Routes } from "react-router-dom";
-// import OverviewPage from "../pages/OverviewPage";
 
-
-// const PayrollInternalRoutes = () => {
-//   return (
-//     <Routes>
-//       <Route path="/" element={<OverviewPage />} />
-//       {/* <Route path="/payroll/overview" element={<OverviewCard />} /> */}
-//       {/* Các route khác sẽ thêm sau */}
-//     </Routes>
-//   );
-// };
-
-// export default PayrollInternalRoutes;
 import { Route, Routes } from "react-router-dom";
 import PayrollLayout from "../layout/PayrollLayout";
 import OverviewPage from "../pages/OverviewPage";
