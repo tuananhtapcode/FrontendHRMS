@@ -9,10 +9,13 @@ import {
   CButton,
   CTooltip,
 } from '@coreui/react'
-import { MemberTable } from '../components/MemberTable'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload } from '@coreui/icons'
 import { accountCols, employeeCols } from '../components/tableColumns'
+import { useEffect, useState } from 'react'
+import { getAccounts } from '../api/api'
+import ReactPaginate from 'react-paginate'
+import { SearchableTable } from '../../../components/zReuse/SearchableTable'
 
 const data = [
   {
@@ -27,7 +30,7 @@ const data = [
     trialDate: '2022-01-10',
     officialDate: '2022-04-10',
     contractType: 'Hợp đồng 1 năm',
-    laborStatus: 'Chính thức',
+    laborStatus: 'Đang làm việc',
     seniority: '2 năm 6 tháng',
     insuranceParticipation: 'Có',
     personalEmail: 'ziptghz@gmail.com',
@@ -99,7 +102,28 @@ const data = [
   },
 ]
 
+const states = ['Tất cả', 'Đang làm việc', 'Đã nghỉ việc']
+
 const CategoryMember = () => {
+  const [accounts, setAccounts] = useState([])
+  const [pageCount, setPageCount] = useState(10)
+  const [currentPage, setCurrentPage] = useState(0)
+
+  useEffect(() => {
+    // const fetchData = async () => {
+    //   try {
+    //     const data = await getAccounts(currentPage, 10)
+    //     setAccounts(data.items)
+    //   } catch (err) {
+    //     console.error(err)
+    //   }
+    // }
+  }, [currentPage])
+
+  const handlePageClick = (event) => {
+    setCurrentPage(event.selected)
+  }
+
   return (
     <>
       <CRow className="mb-3 align-items-center">
@@ -107,7 +131,7 @@ const CategoryMember = () => {
           Đối tượng
         </CCol>
         <CCol className="gap-2 d-flex justify-content-end align-items-center">
-          <CTooltip content="Xuất file Excel">
+          <CTooltip content="Xuất file Excel" placement="bottom">
             <CButton color="secondary">
               <CIcon icon={cilCloudDownload} />
             </CButton>
@@ -122,13 +146,32 @@ const CategoryMember = () => {
         </CTabList>
         <CTabContent>
           <CTabPanel className="p-3" itemKey={1}>
-            <MemberTable data={data} columns={accountCols} />
+            <SearchableTable states={states} data={data} columns={accountCols} />
           </CTabPanel>
           <CTabPanel className="p-3" itemKey={2}>
-            <MemberTable data={data} columns={employeeCols} />
+            <SearchableTable states={states} data={data} columns={employeeCols} />
           </CTabPanel>
         </CTabContent>
       </CTabs>
+      <ReactPaginate
+        previousLabel={'← Trước'}
+        nextLabel={'Sau →'}
+        breakLabel={'...'}
+        pageCount={pageCount}
+        marginPagesDisplayed={1} // hiển thị 1 page ở mép
+        pageRangeDisplayed={3} // hiển thị 3 page ở giữa
+        onPageChange={handlePageClick}
+        containerClassName={'pagination justify-content-center gap-2 mt-4'}
+        pageClassName={'page-item'}
+        pageLinkClassName={'page-link px-3 py-1 border rounded hover:bg-gray-100 cursor-pointer'}
+        previousClassName={'page-item'}
+        previousLinkClassName={'page-link px-3 py-1 border rounded hover:bg-gray-100'}
+        nextClassName={'page-item'}
+        nextLinkClassName={'page-link px-3 py-1 border rounded hover:bg-gray-100'}
+        breakClassName={'page-item'}
+        breakLinkClassName={'page-link px-3 py-1 border rounded'}
+        activeClassName={'bg-blue-500 text-white'}
+      />
     </>
   )
 }

@@ -1,8 +1,8 @@
-import api from '../api/api'
+import api from 'src/api/api'
 
-const getUser = api
-  .get('/users')
-  .then((res) => console.log(res.data))
-  .catch((err) => console.error(err))
+const getAccounts = async (page = 0, limit = 10) => {
+  const res = await api.get('/accounts', { params: { page, limit } })
+  return res.data
+}
 
-export { getUser }
+export { getAccounts }

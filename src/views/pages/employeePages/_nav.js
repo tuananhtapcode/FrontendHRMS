@@ -10,7 +10,7 @@ import {
   cilWallet,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { CNavItem } from '@coreui/react'
+import { CNavGroup, CNavItem } from '@coreui/react'
 
 const _nav = [
   {
@@ -26,10 +26,27 @@ const _nav = [
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Chấm công',
-    to: '/employee/profile',
+    to: '/employee/timesheet',
     icon: <CIcon icon={cilFingerprint} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Chấm công trên ứng dụng',
+        to: '/employee/timesheet/timekeeping-remote',
+      },
+      {
+        component: CNavItem,
+        name: 'Bảng phân ca',
+        to: '/employee/timesheet/shiftplan',
+      },
+      {
+        component: CNavItem,
+        name: 'Bảng chấm công',
+        to: '/employee/timesheet/timesheet-grid',
+      },
+    ],
   },
   {
     component: CNavItem,

@@ -45,6 +45,11 @@ const EmployeesInformationReportEmployeeLackOfPaper = React.lazy(
   () => import('./pages/Report/EmployeeLackOfPaper'),
 )
 
+const SettingDepartmentalStructure = React.lazy(
+  () => import('./pages/Setting/SettingDepartmentalStructure'),
+)
+const SettingJobPosition = React.lazy(() => import('./pages/Setting/SettingJobPosition'))
+
 const routes = [
   {
     path: '/employees-information',
@@ -135,6 +140,16 @@ const routes = [
     path: '/employees-information/report/employee-lack-of-paper',
     name: 'EmployeesInformationReportEmployeeLackOfPaper',
     element: EmployeesInformationReportEmployeeLackOfPaper,
+  },
+  {
+    path: '/employees-information/setting/organization/departmental-structure',
+    name: 'SettingDepartmentalStructure',
+    element: SettingDepartmentalStructure,
+  },
+  {
+    path: '/employees-information/setting/organization/job-position',
+    name: 'SettingJobPosition',
+    element: SettingJobPosition,
   },
 ]
 

@@ -1,6 +1,6 @@
-import { cilChartPie, cilSpeedometer, cilUser } from '@coreui/icons'
+import { cilChartPie, cilSettings, cilSpeedometer, cilUser } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { CNavItem, CNavTitle } from '@coreui/react'
+import { CNavGroup, CNavItem } from '@coreui/react'
 
 const _nav = [
   {
@@ -22,98 +22,22 @@ const _nav = [
     icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
   },
   {
-    component: CNavTitle,
-    name: 'Đang phát triển',
-  },
-  {
-    component: CNavItem,
-    name: 'Hội nhập',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Hợp đồng',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Bổ nhiệm',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Miễn nhiệm',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Thuyên chuyển',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Nghỉ việc',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Khen thưởng',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Kỉ luật/Sự cố',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Phúc lợi',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Quy hoạch',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Đồng phục',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Đề xuất',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Định biên',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Thiết lập',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Kiến thức hữu ích',
-    to: '#',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+    to: '/employees-information/setting',
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Tạo phòng ban',
+        to: '/employees-information/setting/organization/departmental-structure',
+      },
+      {
+        component: CNavItem,
+        name: 'Vị trí công việc',
+        to: '/employees-information/setting/organization/job-position',
+      },
+    ],
   },
 ]
 
