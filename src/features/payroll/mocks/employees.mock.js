@@ -1,0 +1,103 @@
+// src/features/payroll/mocks/employees.mock.js
+export const mockEmployees = [
+  {
+    employeeId: 1,
+    employeeCode: "E0001",
+    fullName: "Nguyễn Văn A",
+    gender: "Male",
+    dateOfBirth: "1995-02-10",
+    email: "nguyenvana@example.com",
+    phoneNumber: "0987654321",
+    hireDate: "2022-03-01",
+    departmentId: 2,          // IT
+    jobPositionId: 1,         // DEV
+    bankName: "Vietcombank",
+    bankAccount: "Nguyen Van A",
+    bankNumber: "0123456789",
+    address: "Hà Nội",
+    status: "Active",         // enum trong DB
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+    deletedAt: null,
+  },
+  {
+    employeeId: 2,
+    employeeCode: "E0002",
+    fullName: "Trần Thị B",
+    gender: "Female",
+    dateOfBirth: "1993-07-20",
+    email: "tranthib@example.com",
+    phoneNumber: "0912345678",
+    hireDate: "2021-06-15",
+    departmentId: 3,          // FIN
+    jobPositionId: 2,         // ACC
+    bankName: "Vietinbank",
+    bankAccount: "Tran Thi B",
+    bankNumber: "0988112233",
+    address: "TP. Hồ Chí Minh",
+    status: "Active",
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+    deletedAt: null,
+  },
+  {
+    employeeId: 3,
+    employeeCode: "E0003",
+    fullName: "Lê Văn C",
+    gender: "Male",
+    dateOfBirth: "1998-11-05",
+    email: "levanc@example.com",
+    phoneNumber: "0909090909",
+    hireDate: "2023-01-10",
+    departmentId: 2,          // IT
+    jobPositionId: 1,         // DEV
+    bankName: "Techcombank",
+    bankAccount: "Le Van C",
+    bankNumber: "0777888999",
+    address: "Đà Nẵng",
+    status: "Active",
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+    deletedAt: null,
+  },
+  {
+    employeeId: 4,
+    employeeCode: "E0004",
+    fullName: "Phạm Thị D",
+    gender: "Female",
+    dateOfBirth: "1990-09-12",
+    email: "phamthid@example.com",
+    phoneNumber: "0977333444",
+    hireDate: "2020-09-01",
+    departmentId: 1,          // HR
+    jobPositionId: 3,         // HRG
+    bankName: "ACB",
+    bankAccount: "Pham Thi D",
+    bankNumber: "0555666777",
+    address: "Hải Phòng",
+    status: "Active",
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+    deletedAt: null,
+  },
+  {
+    employeeId: 5,
+    employeeCode: "E0005",
+    fullName: "Đỗ Văn E",
+    gender: "Male",
+    dateOfBirth: "1988-01-25",
+    email: "dovane@example.com",
+    phoneNumber: "0966123123",
+    hireDate: "2018-05-20",
+    departmentId: 3,          // FIN
+    jobPositionId: 4,         // MAN
+    bankName: "MB Bank",
+    bankAccount: "Do Van E",
+    bankNumber: "0666999000",
+    address: "Cần Thơ",
+    status: "Active",
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+    deletedAt: null,
+  },
+];

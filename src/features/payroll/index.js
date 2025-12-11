@@ -13,6 +13,16 @@ import ComponentsPage from './pages/components/ComponentsPage';
 // const CalculationPage = lazy(() => import('./pages/calculation/CalculationPage'))
 // const DataPage = lazy(() => import('./pages/data/DataPage'))
 
+// ... các import khác bên trên ...
+const PayrollPeriodListPage = lazy(() =>
+  import('./pages/periods/PayrollPeriodListPage'),
+)
+
+const PayrollPeriodDetailPage = lazy(() =>
+  import('./pages/periods/PayrollPeriodDetailPage'),
+)
+
+
 const TemplatesPage = lazy(() => import('./pages/templates/TemplatesPage'));
 const TemplateFormPage = lazy(() => import('./pages/templates/TemplateFormPage'));
 const TimekeepingPage = lazy(() => import('./pages/data/TimekeepingPage'));
@@ -30,9 +40,14 @@ const SalaryOverTimeReportPage = lazy(() => import('./pages/reports/SalaryOverTi
 const CostSummaryReportPage = lazy(() => import('./pages/reports/CostSummaryReportPage'))
 const PaymentSummaryReportPage = lazy(() => import('./pages/reports/PaymentSummaryReportPage'))
 const SalaryHistoryReportPage = lazy(() => import('./pages/reports/SalaryHistoryReportPage'))
+const EmployeeSettingsPage = lazy(() => import('./pages/settings/EmployeeSettingsPage'))
+
+const DefaultParamPage = lazy(() => import('./pages/settings/DefaultParamPage'))
+const TemplateSettingsPage = lazy(() => import('./pages/settings/TemplateSettingsPage'))
 
 
 import { USE_MOCK } from '../payroll/config';
+import ScrollToTop from './components/common/ScrollToTop';
 
 async function ensureMock() {
   if (import.meta.env.DEV && USE_MOCK) {
@@ -49,11 +64,16 @@ ensureMock()
 const PayrollModule = () => {
   return (
     <Suspense fallback={<div>Đang tải trang...</div>}>
+      <ScrollToTop />
       <Routes>
         {/* Layout chung cho toàn bộ module Payroll */}
         <Route path="/" element={<PayrollLayout />}>
           {/* /payroll */}
           <Route index element={<OverviewPage />} />
+
+          {/* Kỳ lương */}
+          <Route path="periods" element={<PayrollPeriodListPage />} />
+          <Route path="periods/:id" element={<PayrollPeriodDetailPage />} />
           
           {/* /payroll/components */}
           <Route path="components" element={<ComponentsPage />} />
@@ -90,6 +110,11 @@ const PayrollModule = () => {
           <Route path="reports/cost-summary" element={<CostSummaryReportPage />} />
           <Route path="reports/payment-summary" element={<PaymentSummaryReportPage />} />
           <Route path="reports/salary-history" element={<SalaryHistoryReportPage />} />
+
+          <Route path="settings/employees" element={<EmployeeSettingsPage />} />
+
+          <Route path="settings/default-params" element={<DefaultParamPage />} />
+          <Route path="settings/templates" element={<TemplateSettingsPage />} />
 
           <Route path="*" element={<Navigate to="." replace />} />
         </Route>

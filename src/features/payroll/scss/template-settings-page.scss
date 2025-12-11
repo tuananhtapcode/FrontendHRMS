@@ -1,0 +1,74 @@
+.template-settings-page {
+    // 1. HEADER
+    .page-header {
+        background-color: var(--cui-white);
+        padding: 1rem 1.5rem;
+        border-radius: var(--cui-border-radius-lg);
+        border: 1px solid var(--cui-border-color-translucent);
+    }
+
+    // 2. CARD & TABS
+    .card-tabs {
+        border-radius: 8px;
+        background-color: #fff;
+        
+        .nav-tabs {
+            border-bottom: 1px solid var(--cui-border-color);
+            .nav-link {
+                border: none; background: transparent; color: var(--cui-gray-600); font-weight: 500; padding: 0.75rem 0; margin-right: 2rem; border-bottom: 3px solid transparent; transition: all 0.2s;
+                &:hover { color: var(--cui-success); }
+                &.active { color: var(--cui-success); border-bottom-color: var(--cui-success); font-weight: 700; }
+            }
+        }
+    }
+
+    // 3. TABLE
+    .table {
+        th { background-color: var(--cui-gray-100); font-weight: 600; font-size: 0.85rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--cui-border-color); }
+        td { font-size: 0.9rem; padding: 0.75rem 1rem; vertical-align: middle; border-bottom: 1px solid var(--cui-border-color); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--cui-success); }
+        
+        // Nút chức năng (bút chì)
+        .btn-icon {
+            border-radius: 50%;
+            width: 32px; height: 32px; padding: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            &:hover { background-color: var(--cui-gray-200); color: var(--cui-primary); }
+        }
+    }
+    
+    // Con trỏ chuột dạng bàn tay khi hover vào hàng
+    .pointer-cursor-table tbody tr {
+        cursor: pointer;
+        &:hover td {
+            background-color: var(--cui-gray-50);
+        }
+    }
+
+    // 4. MODAL EDIT (Trình soạn thảo)
+    .template-edit-modal {
+        .editor-container {
+            .editor-toolbar {
+                .btn { border: 1px solid transparent; &:hover { border-color: #ccc; } }
+            }
+            .editor-content {
+                min-height: 300px;
+                p { margin-bottom: 0.5rem; }
+            }
+            .editor-footer {
+                .btn-outline-secondary.border-dashed {
+                    border-style: dashed;
+                    background-color: #fff;
+                    color: var(--cui-gray-700);
+                    &:hover { background-color: var(--cui-gray-100); }
+                }
+            }
+        }
+        
+        // Radio button màu xanh
+        .form-check-input:checked {
+            background-color: #2eb85c;
+            border-color: #2eb85c;
+        }
+    }
+}

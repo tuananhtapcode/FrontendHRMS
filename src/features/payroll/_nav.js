@@ -106,7 +106,7 @@ const _nav = [
     icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
     items: [
       { component: CNavItem, name: 'Nhân viên',         to: '/payroll/settings/employees' },
-      { component: CNavItem, name: 'Thông số mặc định', to: '/payroll/settings/defaults' },
+      { component: CNavItem, name: 'Thông số mặc định', to: '/payroll/settings/default-params' },
       { component: CNavItem, name: 'Biểu mẫu tuỳ chỉnh',to: '/payroll/settings/templates' },
       { component: CNavItem, name: 'Vai trò người dùng',to: '/payroll/settings/roles' },
       { component: CNavItem, name: 'Kết nối hệ thống',  to: '/payroll/settings/integrations' },
