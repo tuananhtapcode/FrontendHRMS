@@ -1,0 +1,26 @@
+/* ===== Chỉ áp dụng khi đang ở module Payroll ===== */
+body.payroll-route {
+  /* Bảo vệ header sticky của toàn app */
+  .header.header-sticky {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2000 !important;
+  }
+
+  /* Gỡ các clipping/stacking context dễ phá sticky */
+  .wrapper, .layout, main, #app, .app-content {
+    overflow: visible !important;
+    contain: none !important; // phòng trường hợp có ai dùng contain
+  }
+
+  /* Trong Payroll: bỏ sticky thead để không tranh z-index với header app */
+  #payroll-root .pc-table table.table thead th {
+    position: static !important;
+    z-index: auto !important;
+  }
+
+  /* Tránh card/table Payroll cắt lớp con */
+  #payroll-root .pc-table {
+    overflow: visible !important;
+  }
+}

@@ -1,0 +1,24 @@
+.
+├── employee
+├── payroll
+│   ├── api
+│   ├── components
+│   │   ├── UI
+│   │   └── charts
+│   ├── layout
+│   ├── mocks
+│   ├── models
+│   ├── pages
+│   │   ├── calculation
+│   │   ├── components
+│   │   ├── data
+│   │   ├── payment
+│   │   ├── reports
+│   │   ├── settings
+│   │   └── templates
+│   ├── redux
+│   ├── routes
+│   └── scss
+└── system
+
+22 directories

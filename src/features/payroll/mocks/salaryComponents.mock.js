@@ -1,0 +1,53 @@
+// src/features/payroll/mocks/salaryComponents.mock.js
+export const mockSalaryComponents = [
+  {
+    salaryComponentId: 1,
+    code: "BASIC",
+    name: "Lương cơ bản",
+    type: "earning", // enum('earning','deduction')
+    description: "Lương cơ bản theo hợp đồng",
+    isActive: 1,
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+  },
+  {
+    salaryComponentId: 2,
+    code: "ALLOW_POS",
+    name: "Phụ cấp chức vụ",
+    type: "earning",
+    description: "Phụ cấp chức vụ, trách nhiệm",
+    isActive: 1,
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+  },
+  {
+    salaryComponentId: 3,
+    code: "OT",
+    name: "Tiền tăng ca",
+    type: "earning",
+    description: "Thu nhập tăng ca ngoài giờ",
+    isActive: 1,
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+  },
+  {
+    salaryComponentId: 4,
+    code: "SI",
+    name: "BHXH, BHYT, BHTN",
+    type: "deduction",
+    description: "Các khoản bảo hiểm bắt buộc",
+    isActive: 1,
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+  },
+  {
+    salaryComponentId: 5,
+    code: "PIT",
+    name: "Thuế TNCN",
+    type: "deduction",
+    description: "Thuế thu nhập cá nhân",
+    isActive: 1,
+    createdAt: "2025-01-01T08:00:00",
+    updatedAt: "2025-01-01T08:00:00",
+  },
+];

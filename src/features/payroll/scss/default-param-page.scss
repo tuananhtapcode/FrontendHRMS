@@ -1,0 +1,88 @@
+.default-param-page {
+    // 1. HEADER (Lấy lại mặc định)
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--cui-white);
+        padding: 1rem 1.5rem;
+        border-radius: var(--cui-border-radius-lg);
+        border: 1px solid var(--cui-border-color-translucent);
+    }
+    
+    // 2. TABS (Điều hướng)
+    .card-tabs {
+        .nav-tabs {
+            border-bottom: 1px solid var(--cui-border-color);
+
+            .nav-link {
+                color: var(--cui-gray-600);
+                &:hover {
+                    color: var(--cui-success);
+                }
+                // Tab đang chọn phải có màu xanh lá
+                &.active {
+                    color: var(--cui-success);
+                    border-color: transparent transparent var(--cui-success) transparent;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+
+    // 3. TAB CONTENT (Form và Bảng)
+    .tab-content {
+        .tab-pane {
+            padding: 1.5rem 0; // Padding cho nội dung tab
+        }
+
+        // Input với icon Edit
+        .input-group {
+            .input-group-text {
+                background-color: var(--cui-gray-200);
+                cursor: pointer;
+                color: var(--cui-gray-700);
+                &:hover {
+                    background-color: var(--cui-gray-300);
+                }
+            }
+        }
+
+        // Radio Buttons (Mức lương tối thiểu)
+        .form-check-input:checked ~ .form-check-label {
+            color: var(--cui-success);
+            font-weight: 600;
+        }
+
+        // Bảng Mức lương tối thiểu
+        .table {
+            th, td {
+                vertical-align: middle;
+                font-size: 0.9rem;
+            }
+            th:first-child {
+                text-align: left;
+            }
+            
+            // Input trong bảng (để edit trực tiếp)
+            .input-group.justify-content-end {
+                width: 100%;
+                
+                .form-control {
+                    border: none;
+                    background-color: transparent; 
+                    padding: 0;
+                    text-align: right;
+                }
+                .input-group-text {
+                    display: none; 
+                }
+            }
+            
+            // Hàng footer (Mức lương cơ sở)
+            .bg-light .text-center {
+                padding: 1rem;
+            }
+        }
+    }
+}
