@@ -55,7 +55,6 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 import employeesInformationRoutes from './features/employees-information/routes'
 import systemRoutes from './features/system/routes'
 import employeePagesRoutes from './features/employee/routes'
-const Employee = React.lazy(() => import('./features/employee/index'))
 const PayrollModule = React.lazy(() => import('./features/payroll'))
 
 const TimesheetModule = React.lazy(() => import('./features/timesheet'))
@@ -66,7 +65,6 @@ const routes = [
   ...employeePagesRoutes,
   { path: '/', exact: true, name: 'Home' },
   // { path: '/employee', name: 'Employee', element: Employee },
-  { path: '/employee', name: 'Employee', element: Employee },
   { path: '/timesheet/*', name: 'Timesheet', element: TimesheetModule },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
