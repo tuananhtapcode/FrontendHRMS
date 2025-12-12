@@ -66,17 +66,9 @@ const AddShiftSwapStyles = () => (
       margin: 0;
       color: #3c4b64;
     }
-    .btn-save {
-      background-color: #f9b115; /* Màu cam */
-      border-color: #f9b115;
-      color: #fff;
-      font-weight: 600;
-    }
-    .btn-save:hover {
-      background-color: #e59d0e;
-      border-color: #e59d0e;
-      color: #fff;
-    }
+    .btn-orange { background-color: #ea580c; border-color: #ea580c; color: white; font-weight: 600; }
+    .btn-orange:hover { background-color: #c2410c; color: white; border-color: #c2410c; }
+
 
     /* --- Form Card Layout --- */
     .form-card {
@@ -203,7 +195,7 @@ const AddHeader = ({ onBack, onSave }) => {
         <CButton variant="outline" onClick={onBack}>
           Hủy
         </CButton>
-        <CButton className="btn-save" onClick={onSave}>
+        <CButton className="btn-orange" onClick={onSave}>
           Lưu
         </CButton>
       </div>

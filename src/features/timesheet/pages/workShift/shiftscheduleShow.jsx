@@ -3,9 +3,11 @@ import {
   cilCloudUpload,
   cilFile,
   cilFilter,
+  cilPencil,
   cilPlus,
   cilSearch,
   cilSettings,
+  cilTrash,
   cilX
 } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
@@ -50,6 +52,7 @@ const DEFAULT_COLUMNS = [
   { key: 'end_time', label: 'Giờ kết thúc ca', visible: true, width: 150, align: 'center' },
   { key: 'check_out_from', label: 'Chấm ra cuối ca từ', visible: true, width: 180, align: 'center' },
   { key: 'check_out_to', label: 'Chấm ra cuối ca đến', visible: true, width: 180, align: 'center' },
+  { key: 'actions', label: '', visible: true, width: 80 }
 ];
 
 // =====================================================================
@@ -89,6 +92,71 @@ const ShiftListStyles = () => (
     .table-wrapper-fullscreen { flex-grow: 1; background-color: #fff; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: auto; position: relative; }
     .table-header-cell { background-color: #f0f2f5; font-weight: 700; font-size: 0.8rem; color: #3c4b64; white-space: nowrap; vertical-align: middle; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 0 #d8dbe0; }
     tbody tr:hover { background-color: #ececec; }
+    /* === ACTION BUTTONS CSS === */
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+
+      /* Mặc định ẩn */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(5px);
+      transition: all 0.2s ease-in-out;
+    }
+
+    /* Khi hover vào dòng TR thì hiện row-actions */
+    tbody tr:hover .row-actions {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .btn-action {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      cursor: pointer;
+
+      color: #768192;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: #e2e8f0;
+      transform: scale(1.1);
+    }
+
+    .btn-action.edit:hover {
+      color: #f59e0b;
+      background-color: #fef3c7;
+    }
+
+    .btn-action.delete:hover {
+      color: #ef4444;
+      background-color: #fee2e2;
+    }
+    /* === STICKY COLUMN === */
+    .sticky-col-last {
+      position: sticky;
+      right: 0;
+      z-index: 12;
+      background: #fff;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+    }
+
+    /* Header sticky */
+    .table-header-cell.sticky-col-last {
+      z-index: 15;
+    }
+
+
     `}
   </style>
 )
@@ -108,66 +176,66 @@ const PageHeader = ({ onImportClick, onAddClick }) => (
 
 // --- COMPONENT BỘ LỌC NÂNG CAO (ĐÃ CẬP NHẬT) ---
 const AdvancedFilterPopup = ({ visible, onClose, onApply, columns }) => {
-    const [checkedColumns, setCheckedColumns] = useState({});
-    const [columnSearchValues, setColumnSearchValues] = useState({});
+  const [checkedColumns, setCheckedColumns] = useState({});
+  const [columnSearchValues, setColumnSearchValues] = useState({});
 
-    if (!visible) return null;
+  if (!visible) return null;
 
-    const handleCheckColumn = (key) => setCheckedColumns(p => ({ ...p, [key]: !p[key] }));
+  const handleCheckColumn = (key) => setCheckedColumns(p => ({ ...p, [key]: !p[key] }));
 
-    // Xử lý nút Áp dụng: Chỉ lấy những cột ĐƯỢC CHECK và CÓ GIÁ TRỊ
-    const handleApply = () => { 
-        const activeFilters = {};
-        Object.keys(checkedColumns).forEach(key => {
-            if (checkedColumns[key] && columnSearchValues[key]) {
-                activeFilters[key] = columnSearchValues[key];
-            }
-        });
-        onApply(activeFilters); 
-        onClose(); 
-    };
+  // Xử lý nút Áp dụng: Chỉ lấy những cột ĐƯỢC CHECK và CÓ GIÁ TRỊ
+  const handleApply = () => {
+    const activeFilters = {};
+    Object.keys(checkedColumns).forEach(key => {
+      if (checkedColumns[key] && columnSearchValues[key]) {
+        activeFilters[key] = columnSearchValues[key];
+      }
+    });
+    onApply(activeFilters);
+    onClose();
+  };
 
-    // Xử lý nút Bỏ lọc: Reset toàn bộ
-    const handleClear = () => {
-        setCheckedColumns({});
-        setColumnSearchValues({});
-        onApply({}); // Gửi object rỗng để reset bảng
-        onClose();
-    };
+  // Xử lý nút Bỏ lọc: Reset toàn bộ
+  const handleClear = () => {
+    setCheckedColumns({});
+    setColumnSearchValues({});
+    onApply({}); // Gửi object rỗng để reset bảng
+    onClose();
+  };
 
-    return (
-        <div className="popup-container filter-popup">
-            <div className="popup-header">
-                <h5 className="popup-title">Bộ lọc nâng cao</h5>
-                <CButton color="link" onClick={onClose}><CIcon icon={cilX} /></CButton>
-            </div>
-            <div className="popup-body">
-                {columns.filter(c => c.key !== 'checkbox' && c.visible).map(col => (
-                    <div key={col.key} className="mb-2">
-                        <CFormCheck 
-                            label={col.label} 
-                            checked={!!checkedColumns[col.key]} 
-                            onChange={() => handleCheckColumn(col.key)} 
-                        />
-                        {checkedColumns[col.key] && (
-                            <CFormInput 
-                                size="sm" 
-                                className="mt-1 ms-4" 
-                                placeholder={`Lọc ${col.label}...`} 
-                                value={columnSearchValues[col.key] || ''}
-                                onChange={e => setColumnSearchValues(p => ({ ...p, [col.key]: e.target.value }))} 
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-            {/* FOOTER CÓ 2 NÚT: BỎ LỌC & ÁP DỤNG */}
-            <div className="popup-footer">
-                <CButton color="light" size="sm" onClick={handleClear}>Bỏ lọc</CButton>
-                <CButton size="sm" className="btn-orange text-white" onClick={handleApply}>Áp dụng</CButton>
-            </div>
-        </div>
-    );
+  return (
+    <div className="popup-container filter-popup">
+      <div className="popup-header">
+        <h5 className="popup-title">Bộ lọc nâng cao</h5>
+        <CButton color="link" onClick={onClose}><CIcon icon={cilX} /></CButton>
+      </div>
+      <div className="popup-body">
+        {columns.filter(c => c.key !== 'checkbox' && c.visible).map(col => (
+          <div key={col.key} className="mb-2">
+            <CFormCheck
+              label={col.label}
+              checked={!!checkedColumns[col.key]}
+              onChange={() => handleCheckColumn(col.key)}
+            />
+            {checkedColumns[col.key] && (
+              <CFormInput
+                size="sm"
+                className="mt-1 ms-4"
+                placeholder={`Lọc ${col.label}...`}
+                value={columnSearchValues[col.key] || ''}
+                onChange={e => setColumnSearchValues(p => ({ ...p, [col.key]: e.target.value }))}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      {/* FOOTER CÓ 2 NÚT: BỎ LỌC & ÁP DỤNG */}
+      <div className="popup-footer">
+        <CButton color="light" size="sm" onClick={handleClear}>Bỏ lọc</CButton>
+        <CButton size="sm" className="btn-orange text-white" onClick={handleApply}>Áp dụng</CButton>
+      </div>
+    </div>
+  );
 };
 
 const ColumnSettingsPopup = ({ visible, onClose, columns, onUpdateColumns, onResetDefault }) => {
@@ -208,32 +276,84 @@ const PageTable = ({ data, columns }) => {
   const visibleColumns = columns.filter(col => col.visible);
   return (
     <div className="table-wrapper-fullscreen">
-        <CTable hover className="mb-0" align="middle" style={{ minWidth: '1600px' }}>
-            <CTableHead>
-            <CTableRow>
+      <CTable hover className="mb-0" align="middle" style={{ minWidth: '1600px' }}>
+        <CTableHead>
+          <CTableRow>
+            {visibleColumns.map((col) => {
+              let className = "table-header-cell";
+              if (col.align) className += ` text-${col.align}`;
+              if (col.key === 'actions') {
+                className += " sticky-col-last"
+              }
+              return (<CTableHeaderCell key={col.key} className={className} style={{ width: col.width }}>{col.type === 'checkbox' ? <div className="text-center"><CFormCheck /></div> : col.label}</CTableHeaderCell>);
+            })}
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {data.length > 0 ? (
+            data.map((item) => (
+              <CTableRow key={item.id}>
                 {visibleColumns.map((col) => {
-                    let className = "table-header-cell";
-                    if (col.align) className += ` text-${col.align}`;
-                    return (<CTableHeaderCell key={col.key} className={className} style={{ width: col.width }}>{col.type === 'checkbox' ? <div className="text-center"><CFormCheck /></div> : col.label}</CTableHeaderCell>);
+
+                  let className = "";
+                  if (col.align) className += ` text-${col.align}`;
+
+                  // ✅ CỘT ACTIONS
+                  if (col.key === 'actions') {
+                    return (
+                      <CTableDataCell
+                        key={`${item.id}-${col.key}`}
+                        className="sticky-col-last"
+                      >
+                        <div className="row-actions">
+
+                          <CTooltip content="Chỉnh sửa">
+                            <button className="btn-action edit" onClick={() => console.log('Edit', item)}>
+                              <CIcon icon={cilPencil} />
+                            </button>
+                          </CTooltip>
+
+                          <CTooltip content="Xóa">
+                            <button className="btn-action delete" onClick={() => console.log('Delete', item)}>
+                              <CIcon icon={cilTrash} />
+                            </button>
+                          </CTooltip>
+
+                        </div>
+                      </CTableDataCell>
+                    );
+                  }
+
+                  // ✅ CỘT CHECKBOX
+                  if (col.type === 'checkbox') {
+                    return (
+                      <CTableDataCell
+                        key={`${item.id}-${col.key}`}
+                        className="text-center"
+                      >
+                        <CFormCheck />
+                      </CTableDataCell>
+                    );
+                  }
+
+                  // ✅ CÁC CỘT BÌNH THƯỜNG
+                  const content = item[col.key];
+
+                  return (
+                    <CTableDataCell
+                      key={`${item.id}-${col.key}`}
+                      className={className}
+                      style={{ fontSize: '0.9rem', color: '#333' }}
+                    >
+                      {content}
+                    </CTableDataCell>
+                  )
                 })}
-            </CTableRow>
-            </CTableHead>
-            <CTableBody>
-            {data.length > 0 ? (
-                data.map((item) => (
-                <CTableRow key={item.id}>
-                    {visibleColumns.map((col) => {
-                        let className = "";
-                        if (col.align) className += ` text-${col.align}`;
-                        let content = item[col.key];
-                        if (col.type === 'checkbox') content = <div className="text-center"><CFormCheck /></div>;
-                        return <CTableDataCell key={`${item.id}-${col.key}`} className={className} style={{ fontSize: '0.9rem', color: '#333' }}>{content}</CTableDataCell>;
-                    })}
-                </CTableRow>
-                ))
-            ) : (<CTableRow><CTableDataCell colSpan={visibleColumns.length} className="text-center py-4 text-muted">Không có dữ liệu</CTableDataCell></CTableRow>)}
-            </CTableBody>
-        </CTable>
+              </CTableRow>
+            ))
+          ) : (<CTableRow><CTableDataCell colSpan={visibleColumns.length} className="text-center py-4 text-muted">Không có dữ liệu</CTableDataCell></CTableRow>)}
+        </CTableBody>
+      </CTable>
     </div>
   )
 }
@@ -265,21 +385,21 @@ const ShiftScheduleShow = () => {
   // --- LOGIC LỌC DỮ LIỆU ĐƯỢC CẬP NHẬT ---
   const filteredData = useMemo(() => {
     return data.filter(item => {
-        // 1. Tìm kiếm chung (Search Box)
-        const search = filters.search.toLowerCase();
-        const matchSearch = !search || Object.values(item).some(v => String(v).toLowerCase().includes(search));
+      // 1. Tìm kiếm chung (Search Box)
+      const search = filters.search.toLowerCase();
+      const matchSearch = !search || Object.values(item).some(v => String(v).toLowerCase().includes(search));
 
-        // 2. Tìm kiếm nâng cao (Filter Popup)
-        // Kiểm tra tất cả các cột đang được lọc
-        const columnFilters = filters.columnFilters || {};
-        const matchColumns = Object.keys(columnFilters).every(key => {
-            const filterVal = columnFilters[key].toLowerCase();
-            const itemVal = String(item[key] || '').toLowerCase();
-            return itemVal.includes(filterVal);
-        });
+      // 2. Tìm kiếm nâng cao (Filter Popup)
+      // Kiểm tra tất cả các cột đang được lọc
+      const columnFilters = filters.columnFilters || {};
+      const matchColumns = Object.keys(columnFilters).every(key => {
+        const filterVal = columnFilters[key].toLowerCase();
+        const itemVal = String(item[key] || '').toLowerCase();
+        return itemVal.includes(filterVal);
+      });
 
-        // Kết hợp cả 2 điều kiện
-        return matchSearch && matchColumns;
+      // Kết hợp cả 2 điều kiện
+      return matchSearch && matchColumns;
     });
   }, [data, filters]);
 

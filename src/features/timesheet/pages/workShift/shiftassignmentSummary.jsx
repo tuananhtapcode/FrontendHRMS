@@ -18,7 +18,8 @@ import {
   CModalHeader,
   CModalTitle,
   CRow,
-  CSpinner
+  CSpinner,
+  CTooltip
 } from '@coreui/react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -29,8 +30,10 @@ import {
   cilChevronLeft,
   cilChevronRight,
   cilOptions,
+  cilPencil,
   cilSearch,
   cilSettings,
+  cilTrash,
   cilX
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
@@ -82,7 +85,7 @@ const generateDaysArray = (start, end) => {
 };
 
 // =====================================================================
-// 1. CSS CUSTOM
+// 1. CSS CUSTOM (Đã thêm CSS cho nút Sửa/Xóa khi hover)
 // =====================================================================
 const ShiftSummaryStyles = () => (
   <style>
@@ -97,9 +100,10 @@ const ShiftSummaryStyles = () => (
     .summary-header-actions { display: flex; gap: 12px; flex-shrink: 0; }
 
     .summary-filter-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 1rem; flex-shrink: 0; }
+    .filter-right { display: flex; gap: 12px; align-items: center; }
     .filter-left { display: flex; gap: 12px; align-items: center; }
     .filter-left .search-bar { width: 250px; }
-    .filter-right { display: flex; gap: 12px; align-items: center; }
+    
     
     .date-range-picker { display: flex; align-items: center; border: 1px solid #ccc; border-radius: 0.375rem; background: #fff; }
     .date-range-picker .btn { border: none; }
@@ -130,12 +134,59 @@ const ShiftSummaryStyles = () => (
     .employee-name { font-weight: 500; font-size: 0.9rem; }
     .employee-id { font-size: 0.75rem; color: #8a93a2; }
 
-    .shift-cell { min-height: 60px; vertical-align: top; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+    /* === SHIFT CELL & HOVER ACTIONS === */
+    .shift-cell { 
+        min-height: 60px; 
+        vertical-align: top; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: flex-start; 
+        justify-content: center;
+        position: relative; /* Để định vị nút action */
+    }
+    .shift-cell:hover {
+        background-color: #f8f9fa;
+    }
     .shift-cell.is-today-col { background-color: #fff8f8; }
+    
     .shift-tag { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; color: #333; }
     .shift-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; background-color: #333; }
     .shift-time { font-size: 0.75rem; color: #768192; margin-left: 12px; margin-top: 1px; }
 
+    /* Action Container: Ẩn mặc định, Hiện khi hover */
+    .cell-hover-actions {
+        display: none;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
+        padding: 2px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        z-index: 5;
+    }
+    .shift-cell:hover .cell-hover-actions {
+        display: flex;
+        gap: 4px;
+    }
+    .action-btn-mini {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: #768192;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .action-btn-mini:hover { background-color: #ebedef; }
+    .action-btn-mini.edit:hover { color: #ea580c; background-color: #fff7ed; }
+    .action-btn-mini.delete:hover { color: #e55353; background-color: #fee2e2; }
+
+    /* Settings Popup */
     .settings-popup { position: absolute; top: 100%; right: 0; width: 320px; background: white; border: 1px solid #d8dbe0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; z-index: 100; margin-top: 5px; }
     .popup-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #ebedef; font-weight: 700; }
     .popup-body { padding: 16px; }
@@ -166,7 +217,6 @@ const [MOCK_EMPLOYEES, MOCK_SHIFTS, MOCK_AVAILABLE_SHIFTS, MOCK_ORG_UNITS] = (()
   const currentMonthPrefix = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
   const dayStr = today.getDate().toString().padStart(2, '0');
   
-  // Dữ liệu mẫu: Gắn luôn 1 ca vào NGÀY HÔM NAY để bạn thấy rõ cột hôm nay
   const shifts = [
     { id: 1, employeeId: 'NV000001', date: `${currentMonthPrefix}-${dayStr}`, shiftCode: 'HC', startTime: '08:00', endTime: '17:30' },
     { id: 2, employeeId: 'NV000001', date: `${currentMonthPrefix}-02`, shiftCode: 'HC', startTime: '08:00', endTime: '17:30' },
@@ -174,9 +224,10 @@ const [MOCK_EMPLOYEES, MOCK_SHIFTS, MOCK_AVAILABLE_SHIFTS, MOCK_ORG_UNITS] = (()
   ]
 
   const availableShifts = [
-      { id: 'HC', name: 'HC (08:00 - 17:30)' },
-      { id: 'abc123', name: 'abc123 (08:00 - 08:30)' },
-      { id: 'TCT', name: 'TCT (08:00 - 08:30)' },
+      { id: 'HC', name: 'HC (08:00 - 17:30)', start: '08:00', end: '17:30' },
+      { id: 'abc123', name: 'abc123 (08:00 - 08:30)', start: '08:00', end: '08:30' },
+      { id: 'TCT', name: 'TCT (08:00 - 08:30)', start: '08:00', end: '08:30' },
+      { id: 'CA_CHIEU', name: 'Ca Chiều (13:30 - 22:00)', start: '13:30', end: '22:00' },
   ]
 
   const orgUnits = [
@@ -219,6 +270,77 @@ const SelectionModal = ({ visible, onClose, type, data, selectedIds, onConfirm }
         </CModal>
     )
 }
+
+// --- MODAL SỬA CA LÀM VIỆC (EDIT SHIFT MODAL) ---
+const EditShiftModal = ({ visible, onClose, onSave, targetCell, availableShifts, employees }) => {
+    const [selectedShift, setSelectedShift] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        if (visible && targetCell) {
+            // Nếu đã có ca, tự động chọn ca đó
+            const currentShift = targetCell.shifts && targetCell.shifts.length > 0 ? targetCell.shifts[0].shiftCode : '';
+            setSelectedShift(currentShift);
+            setSearchTerm('');
+        }
+    }, [visible, targetCell]);
+
+    const employeeName = targetCell ? employees.find(e => e.id === targetCell.empId)?.name : '';
+    const filteredShifts = availableShifts.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const handleSave = () => {
+        if (selectedShift) {
+            const shiftInfo = availableShifts.find(s => s.id === selectedShift);
+            onSave(shiftInfo);
+        }
+        onClose();
+    };
+
+    return (
+        <CModal visible={visible} onClose={onClose} alignment="center">
+            <CModalHeader><CModalTitle>Cập nhật ca làm việc</CModalTitle></CModalHeader>
+            <CModalBody>
+                <p className="mb-2"><strong>Nhân viên:</strong> {employeeName} ({targetCell?.empId})</p>
+                <p className="mb-3"><strong>Ngày:</strong> {formatDisplayDate(targetCell?.date)}</p>
+                
+                <CFormLabel>Chọn ca làm việc</CFormLabel>
+                <CInputGroup className="mb-2">
+                    <CInputGroupText><CIcon icon={cilSearch}/></CInputGroupText>
+                    <CFormInput placeholder="Tìm kiếm ca..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                </CInputGroup>
+                
+                <CFormSelect size="lg" value={selectedShift} onChange={(e) => setSelectedShift(e.target.value)}>
+                    <option value="">-- Chọn ca --</option>
+                    {filteredShifts.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                </CFormSelect>
+            </CModalBody>
+            <CModalFooter>
+                <CButton color="light" onClick={onClose}>Hủy</CButton>
+                <CButton className="btn-orange" onClick={handleSave}>Lưu</CButton>
+            </CModalFooter>
+        </CModal>
+    );
+};
+
+// --- MODAL XÓA CA LÀM VIỆC (DELETE CONFIRM MODAL) ---
+const DeleteShiftModal = ({ visible, onClose, onConfirm, targetCell, employees }) => {
+    const employeeName = targetCell ? employees.find(e => e.id === targetCell.empId)?.name : '';
+    
+    return (
+        <CModal visible={visible} onClose={onClose} alignment="center">
+            <CModalHeader><CModalTitle>Xác nhận xóa</CModalTitle></CModalHeader>
+            <CModalBody>
+                Bạn có chắc chắn muốn xóa phân ca ngày <strong>{formatDisplayDate(targetCell?.date)}</strong> của nhân viên <strong>{employeeName}</strong>?
+            </CModalBody>
+            <CModalFooter>
+                <CButton color="light" onClick={onClose}>Hủy</CButton>
+                <CButton color="danger" className="text-white" onClick={() => { onConfirm(); onClose(); }}>Xóa</CButton>
+            </CModalFooter>
+        </CModal>
+    );
+};
 
 const DateRangeModal = ({ visible, onClose, initialStart, initialEnd, onApply }) => {
     const [start, setStart] = useState(initialStart);
@@ -302,11 +424,10 @@ const SettingsPopup = ({ visible, onClose, currentSettings, onSave }) => {
 const ShiftAssignmentSummary = () => {
   const [employees, setEmployees] = useState([])
   const [displayedEmployees, setDisplayedEmployees] = useState([]) 
-  const [shifts, setShifts] = useState({}) 
+  const [shifts, setShifts] = useState({}) // Object: { "NV01_2025-12-01": [ShiftData] }
   const [weekDays, setWeekDays] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // State Ngày tháng (Mặc định: Ngày 1 -> Cuối tháng hiện tại)
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -321,9 +442,16 @@ const ShiftAssignmentSummary = () => {
   const [showBulkModal, setShowBulkModal] = useState(false)
   const [showDateRangeModal, setShowDateRangeModal] = useState(false)
   
+  // -- State quản lý Modal Sửa/Xóa đơn lẻ --
+  const [modalState, setModalState] = useState({
+      editVisible: false,
+      deleteVisible: false,
+      targetCell: null // { empId, date, shifts: [] }
+  });
+
   // State để kích hoạt scroll
   const [triggerScrollToToday, setTriggerScrollToToday] = useState(false);
-  const scrollContainerRef = useRef(null); // Ref cho container bảng
+  const scrollContainerRef = useRef(null); 
 
   const navigate = useNavigate()
 
@@ -347,26 +475,16 @@ const ShiftAssignmentSummary = () => {
     }, 300);
   }, []); 
 
-  // LOGIC CUỘN TỚI HÔM NAY (Sau khi render)
   useEffect(() => {
       if (triggerScrollToToday && !loading && weekDays.length > 0) {
-          // Dùng setTimeout để đợi DOM render xong cột
           setTimeout(() => {
               const container = scrollContainerRef.current;
-              // Tìm header của ngày hôm nay (class 'is-today')
               const todayHeader = container?.querySelector('.grid-header.is-today');
-              
               if (container && todayHeader) {
-                  // Tính toán vị trí cuộn:
-                  // Offset của cột today - Chiều rộng của cột Sticky Nhân viên (250px)
                   const scrollPos = todayHeader.offsetLeft - 250; 
-                  
-                  container.scrollTo({
-                      left: scrollPos,
-                      behavior: 'smooth'
-                  });
+                  container.scrollTo({ left: scrollPos, behavior: 'smooth' });
               }
-              setTriggerScrollToToday(false); // Reset trigger
+              setTriggerScrollToToday(false); 
           }, 100);
       }
   }, [triggerScrollToToday, loading, weekDays]);
@@ -391,42 +509,29 @@ const ShiftAssignmentSummary = () => {
     }
   }, [filters, employees, shifts, weekDays]);
 
+  // --- Handlers cho Date Nav ---
   const handlePrevMonth = () => {
       const curr = new Date(startDate);
       curr.setMonth(curr.getMonth() - 1);
       const first = new Date(curr.getFullYear(), curr.getMonth(), 1);
       const last = new Date(curr.getFullYear(), curr.getMonth() + 1, 0);
-      setStartDate(formatDateParam(first));
-      setEndDate(formatDateParam(last));
+      setStartDate(formatDateParam(first)); setEndDate(formatDateParam(last));
   }
-
   const handleNextMonth = () => {
       const curr = new Date(startDate);
       curr.setMonth(curr.getMonth() + 1);
       const first = new Date(curr.getFullYear(), curr.getMonth(), 1);
       const last = new Date(curr.getFullYear(), curr.getMonth() + 1, 0);
-      setStartDate(formatDateParam(first));
-      setEndDate(formatDateParam(last));
+      setStartDate(formatDateParam(first)); setEndDate(formatDateParam(last));
   }
-
-  // --- HÀM XỬ LÝ NÚT HÔM NAY ---
   const handleJumpToToday = () => {
       const now = new Date();
-      // 1. Reset khoảng thời gian về tháng hiện tại
       const first = new Date(now.getFullYear(), now.getMonth(), 1);
       const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      
-      setStartDate(formatDateParam(first));
-      setEndDate(formatDateParam(last));
-
-      // 2. Kích hoạt trigger cuộn
+      setStartDate(formatDateParam(first)); setEndDate(formatDateParam(last));
       setTriggerScrollToToday(true);
   }
-
-  const handleDateRangeApply = (s, e) => {
-      setStartDate(s);
-      setEndDate(e);
-  }
+  const handleDateRangeApply = (s, e) => { setStartDate(s); setEndDate(e); }
 
   const groupedData = useMemo(() => {
       if (!viewSettings.grouped) return null;
@@ -443,6 +548,53 @@ const ShiftAssignmentSummary = () => {
   const getShiftsForCell = (employeeId, date) => {
     const key = `${employeeId}_${date}`;
     return shifts[key] || [];
+  }
+
+  // --- HANDLER SỬA/XÓA CA ---
+  const handleCellClick = (action, empId, date, cellShifts) => {
+      const target = { empId, date, shifts: cellShifts };
+      if (action === 'edit') {
+          setModalState({ ...modalState, editVisible: true, targetCell: target });
+      } else if (action === 'delete') {
+          // Chỉ mở modal xóa nếu có ca
+          if (cellShifts && cellShifts.length > 0) {
+              setModalState({ ...modalState, deleteVisible: true, targetCell: target });
+          }
+      }
+  }
+
+  const handleSaveShift = (newShiftInfo) => {
+      const { targetCell } = modalState;
+      if (!targetCell || !newShiftInfo) return;
+
+      const key = `${targetCell.empId}_${targetCell.date}`;
+      const newShiftEntry = {
+          id: Date.now(), // Fake ID
+          employeeId: targetCell.empId,
+          date: targetCell.date,
+          shiftCode: newShiftInfo.id,
+          startTime: newShiftInfo.start,
+          endTime: newShiftInfo.end
+      };
+
+      // Cập nhật State: Ghi đè ca cũ bằng ca mới (hoặc thêm mới)
+      setShifts(prev => ({
+          ...prev,
+          [key]: [newShiftEntry]
+      }));
+  }
+
+  const handleDeleteShift = () => {
+      const { targetCell } = modalState;
+      if (!targetCell) return;
+      const key = `${targetCell.empId}_${targetCell.date}`;
+      
+      // Xóa key khỏi object shifts (hoặc set thành mảng rỗng)
+      setShifts(prev => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+      });
   }
 
   const handleExportExcel = () => {
@@ -482,18 +634,39 @@ const ShiftAssignmentSummary = () => {
                 <div className="employee-id">{emp.id}</div>
             </div>
         </div>
-        {weekDays.map((day) => (
-            <div key={`${emp.id}_${day.date}`} className={`grid-cell shift-cell ${day.isToday ? 'is-today-col' : ''}`}>
-                {getShiftsForCell(emp.id, day.fullDate).map((shift) => (
-                    <div key={shift.id} className="shift-item">
-                        <div className="shift-tag">
-                            <span className="shift-dot"></span>{shift.shiftCode}
-                        </div>
-                        {viewSettings.showTime && <div className="shift-time">{shift.startTime} - {shift.endTime}</div>}
+        {weekDays.map((day) => {
+            const cellShifts = getShiftsForCell(emp.id, day.fullDate);
+            const hasShift = cellShifts.length > 0;
+            return (
+                <div key={`${emp.id}_${day.date}`} className={`grid-cell shift-cell ${day.isToday ? 'is-today-col' : ''}`}>
+                    {/* Nút Action hiện khi Hover */}
+                    <div className="cell-hover-actions">
+                        <CTooltip content={hasShift ? "Sửa phân ca" : "Thêm phân ca"}>
+                            <button className="action-btn-mini edit" onClick={() => handleCellClick('edit', emp.id, day.fullDate, cellShifts)}>
+                                <CIcon icon={cilPencil} size="sm" />
+                            </button>
+                        </CTooltip>
+                        {hasShift && (
+                            <CTooltip content="Xóa phân ca">
+                                <button className="action-btn-mini delete" onClick={() => handleCellClick('delete', emp.id, day.fullDate, cellShifts)}>
+                                    <CIcon icon={cilTrash} size="sm" />
+                                </button>
+                            </CTooltip>
+                        )}
                     </div>
-                ))}
-            </div>
-        ))}
+
+                    {/* Hiển thị ca làm việc */}
+                    {cellShifts.map((shift) => (
+                        <div key={shift.id} className="shift-item">
+                            <div className="shift-tag">
+                                <span className="shift-dot"></span>{shift.shiftCode}
+                            </div>
+                            {viewSettings.showTime && <div className="shift-time">{shift.startTime} - {shift.endTime}</div>}
+                        </div>
+                    ))}
+                </div>
+            )
+        })}
     </React.Fragment>
   );
 
@@ -509,12 +682,7 @@ const ShiftAssignmentSummary = () => {
             <button className="tab-button" onClick={() => navigate('/timesheet/shiftassignmentSummary/shift')}>Ca làm việc</button>
           </div>
           <div className="summary-header-actions">
-            
-            {/* Nút Hôm nay luôn hiển thị */}
-            <CButton color="secondary" variant="outline" onClick={handleJumpToToday}>
-                Hôm nay
-            </CButton>
-
+            <CButton color="secondary" variant="outline" onClick={handleJumpToToday}>Hôm nay</CButton>
             <CButton className="btn-orange" onClick={() => setShowBulkModal(true)}>Phân ca hàng loạt</CButton>
             <CButton color="secondary" variant="outline" className="ms-auto"><CIcon icon={cilOptions} /></CButton>
           </div>
@@ -538,9 +706,7 @@ const ShiftAssignmentSummary = () => {
           <div className="filter-right">
             <div className="date-range-picker">
               <CButton color="secondary" variant="ghost" onClick={handlePrevMonth}><CIcon icon={cilChevronLeft} /></CButton>
-              <span className="date-range-text">
-                  {formatDisplayDate(startDate)} - {formatDisplayDate(endDate)}
-              </span>
+              <span className="date-range-text">{formatDisplayDate(startDate)} - {formatDisplayDate(endDate)}</span>
               <CButton color="secondary" variant="ghost" onClick={handleNextMonth}><CIcon icon={cilChevronRight} /></CButton>
               <span className="date-range-icon" onClick={() => setShowDateRangeModal(true)}><CIcon icon={cilCalendar} /></span>
             </div>
@@ -556,7 +722,6 @@ const ShiftAssignmentSummary = () => {
           </div>
         </div>
 
-        {/* --- GẮN REF CHO CONTAINER ĐỂ CUỘN --- */}
         <div className="schedule-grid-container" ref={scrollContainerRef}>
           {loading ? <div className="d-flex justify-content-center p-5"><CSpinner color="primary" /></div> : (
             <div className="schedule-grid" style={{ gridTemplateColumns: `250px repeat(${weekDays.length}, minmax(180px, 1fr))` }}>
@@ -571,6 +736,26 @@ const ShiftAssignmentSummary = () => {
 
       <BulkAssignmentModal visible={showBulkModal} onClose={() => setShowBulkModal(false)} availableShifts={MOCK_AVAILABLE_SHIFTS} employees={MOCK_EMPLOYEES} orgUnits={MOCK_ORG_UNITS} />
       <DateRangeModal visible={showDateRangeModal} onClose={() => setShowDateRangeModal(false)} initialStart={startDate} initialEnd={endDate} onApply={handleDateRangeApply} />
+      
+      {/* MODAL SỬA CA */}
+      <EditShiftModal 
+        visible={modalState.editVisible} 
+        onClose={() => setModalState(p => ({...p, editVisible: false}))} 
+        onSave={handleSaveShift}
+        targetCell={modalState.targetCell}
+        availableShifts={MOCK_AVAILABLE_SHIFTS}
+        employees={MOCK_EMPLOYEES}
+      />
+
+      {/* MODAL XÓA CA */}
+      <DeleteShiftModal 
+        visible={modalState.deleteVisible} 
+        onClose={() => setModalState(p => ({...p, deleteVisible: false}))} 
+        onConfirm={handleDeleteShift}
+        targetCell={modalState.targetCell}
+        employees={MOCK_EMPLOYEES}
+      />
+
     </React.Fragment>
   )
 }
