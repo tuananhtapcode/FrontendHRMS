@@ -15,7 +15,7 @@ import { accountCols, employeeCols } from '../components/tableColumns'
 import { useEffect, useState } from 'react'
 import { getAccounts } from '../api/api'
 import ReactPaginate from 'react-paginate'
-import { SearchableTable } from '../../../components/zReuse/SearchableTable'
+import { SearchableTable } from '../../../components/zReuse/zComponents'
 
 const data = [
   {

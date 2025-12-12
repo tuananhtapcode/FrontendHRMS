@@ -1,9 +1,9 @@
 import { CButtonGroup, CCard, CCol, CFormCheck, CRow } from '@coreui/react'
-import { SearchableTable } from '../../../../../components/zReuse/SearchableTable'
-import { timekeepingRemoteCols } from '../../components/tableColumns'
-const Second = () => {
-  const tableStates = ['Hôm nay', 'Hôm qua', 'Tuần này', 'Tuần trước', 'Tháng này', 'Tháng trước']
-  const buttons = ['Tất cả', 'Chờ duyệt', 'Đã duyệt', 'Bị từ chối']
+import { SearchableTable } from '../../../../components/zReuse/zComponents'
+import { attendanceCols } from '../../components/tableColumns'
+
+const Third = () => {
+  const buttons = ['Tất cả', 'Chưa gửi', 'Chờ duyệt', 'Đã duyệt', 'Bị từ chối']
   return (
     <>
       <CRow>
@@ -34,11 +34,11 @@ const Second = () => {
           </CCard>
         </CCol>
         <CCol style={{ width: '1px' }}>
-          <SearchableTable columns={timekeepingRemoteCols} states={tableStates} />
+          <SearchableTable columns={attendanceCols} />
         </CCol>
       </CRow>
     </>
   )
 }
 
-export default Second
+export default Third

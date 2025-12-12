@@ -1,7 +1,7 @@
 import { CButtonGroup, CCard, CCol, CFormCheck, CRow } from '@coreui/react'
-import { SearchableTable } from '../../../../../components/zReuse/SearchableTable'
+import { SearchableTable } from '../../../../components/zReuse/zComponents'
 import { timekeepingRemoteCols } from '../../components/tableColumns'
-const Third = () => {
+const Second = () => {
   const tableStates = ['Hôm nay', 'Hôm qua', 'Tuần này', 'Tuần trước', 'Tháng này', 'Tháng trước']
   const buttons = ['Tất cả', 'Chờ duyệt', 'Đã duyệt', 'Bị từ chối']
   return (
@@ -17,8 +17,8 @@ const Third = () => {
                     key={index}
                     type="radio"
                     button={{ color: 'primary', variant: 'outline' }}
-                    name="vbtnradio-tab3"
-                    id={`vbtnradio${index}-tab3`}
+                    name="vbtnradio-tab2"
+                    id={`vbtnradio${index}-tab2`}
                     autoComplete="off"
                     defaultChecked={index === 1}
                     label={
@@ -41,4 +41,4 @@ const Third = () => {
   )
 }
 
-export default Third
+export default Second

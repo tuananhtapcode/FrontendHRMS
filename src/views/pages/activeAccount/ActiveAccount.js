@@ -47,7 +47,7 @@ const ActiveAccount = () => {
     verifyToken()
   }, [token])
 
-  // 🧠 Gửi password về backend
+  // Gửi password về backend
   const handleSubmit = async (e) => {
     e.preventDefault()
 

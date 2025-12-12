@@ -52,3 +52,45 @@
     cursor: pointer;
   }
 }
+
+.mydatepickerwrapper {
+  display: flex;
+  gap: 10px; /* spacing giữa 2 ô */
+  align-items: center; /* căn giữa theo chiều dọc */
+  
+  :global(.react-datepicker-wrapper) {
+    width: 100%;
+  }
+
+  :global(.react-datepicker) {
+    background: var(--cui-date-picker-bg, #fff);
+    box-shadow: var(--cui-date-picker-box-shadow, 0 4px 12px rgba(0,0,0,0.15));
+    border: var(--cui-date-picker-border-width, 1px) solid #ccc;
+    border-radius: 0.25rem;
+    color: var(--cui-date-picker-color, #212529);
+    z-index: var(--cui-date-picker-zindex, 1000);
+  }
+
+  :global(.react-datepicker__day--selected) {
+    background-color: var(--cui-primary, #5c7cfa);
+    color: white;
+  }
+
+  :global(.react-datepicker__day--today) {
+    border: 1px solid var(--cui-primary, #5c7cfa);
+    border-radius: 50%;
+  }
+
+  :global(.react-datepicker__input-container input) {
+    padding: 0.375rem 0.75rem;
+    height: calc(1.5em + 0.75rem + 2px);
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+  }
+
+}
+
+

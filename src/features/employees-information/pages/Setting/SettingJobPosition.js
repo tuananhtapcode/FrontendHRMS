@@ -1,7 +1,7 @@
 import { CRow, CCol, CButton, CTooltip } from '@coreui/react'
 import { jobPositionCols } from '../../components/tableColumns'
 import ReactPaginate from 'react-paginate'
-import { SearchableTable } from '../../../../components/zReuse/SearchableTable'
+import { SearchableTable } from '../../../../components/zReuse/zComponents'
 import { useEffect, useMemo, useState } from 'react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload } from '@coreui/icons'

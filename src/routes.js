@@ -50,18 +50,18 @@ const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
-const Employee = React.lazy(() => import('./features/employee'))
+// const Employee = React.lazy(() => import('./features/employee'))
 
 import employeesInformationRoutes from './features/employees-information/routes'
 import systemRoutes from './features/system/routes'
+import employeePagesRoutes from './features/employee/routes'
 
-import employeePagesRoutes from './views/pages/employeePages/routes'
 const routes = [
   ...employeesInformationRoutes,
   ...systemRoutes,
   ...employeePagesRoutes,
   { path: '/', exact: true, name: 'Home' },
-  { path: '/employee', name: 'Employee', element: Employee },
+  // { path: '/employee', name: 'Employee', element: Employee },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },

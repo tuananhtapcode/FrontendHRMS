@@ -1,14 +1,4 @@
-import {
-  cibOpsgenie,
-  cilFingerprint,
-  cilNotes,
-  cilObjectGroup,
-  cilPaw,
-  cilSpeedometer,
-  cilStar,
-  cilUser,
-  cilWallet,
-} from '@coreui/icons'
+import { cilEnvelopeClosed, cilFingerprint, cilSpeedometer, cilUser } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -49,40 +39,27 @@ const _nav = [
     ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Đơn từ',
-    to: '/employee/profile',
-    icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Tiền lương',
-    to: '/employee/profile',
-    icon: <CIcon icon={cilWallet} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Phúc lợi',
-    to: '/employee/profile',
-    icon: <CIcon icon={cilPaw} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Đồng phục',
-    to: '/employee/profile',
-    icon: <CIcon icon={cibOpsgenie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Tài sản',
-    to: '/employee/profile',
-    icon: <CIcon icon={cilObjectGroup} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Đánh giá',
-    to: '/employee/profile',
-    icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+    to: '/employee/timesheet',
+    icon: <CIcon icon={cilEnvelopeClosed} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Đơn xin nghỉ',
+        to: '/employee/timesheet/attendance',
+      },
+      {
+        component: CNavItem,
+        name: 'Đăng ký làm thêm',
+        to: '/employee/timesheet/overtime-request',
+      },
+      {
+        component: CNavItem,
+        name: 'Đề nghị đổi ca',
+        to: '/employee/timesheet/change-shift',
+      },
+    ],
   },
 ]
 

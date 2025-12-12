@@ -1,7 +1,7 @@
 import { CRow, CCol, CButton } from '@coreui/react'
 import { deparmentCols } from '../../components/tableColumns'
 import ReactPaginate from 'react-paginate'
-import { SearchableTable } from '../../../../components/zReuse/SearchableTable'
+import { SearchableTable } from '../../../../components/zReuse/zComponents'
 import { useState } from 'react'
 import { AddModal } from '../components/AddModal'
 
