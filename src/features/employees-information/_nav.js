@@ -29,7 +29,7 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'Tạo phòng ban',
+        name: 'Cơ cấu phòng ban',
         to: '/employees-information/setting/organization/departmental-structure',
       },
       {

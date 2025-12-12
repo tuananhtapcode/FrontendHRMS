@@ -46,5 +46,8 @@ export default defineConfig(() => {
         // https://vitejs.dev/config/server-options.html
       },
     },
+    define: {
+      __BUILD_ID__: JSON.stringify(Date.now()),
+    },
   }
 })

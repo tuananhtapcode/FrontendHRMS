@@ -2,15 +2,13 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import React, { Suspense, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { HashRouter, Route, Routes } from 'react-router-dom'
-import './scss/style.scss'
-// We use those styles to show code examples, you should remove them in your application.
-import './scss/examples.scss'
 import ProtectedRoute from './ProtectedRoute'
+import { BUILD_ID } from './buildId'
 
-// Containers
+import './scss/style.scss'
+import './scss/examples.scss'
+
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
-
-// Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
 const ActiveAccount = React.lazy(() => import('./views/pages/activeAccount/ActiveAccount'))
@@ -20,6 +18,17 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const storedTheme = useSelector((state) => state.theme)
+
+  useEffect(() => {
+    const oldBuildId = localStorage.getItem('build_id')
+    if (!oldBuildId) {
+      localStorage.setItem('build_id', BUILD_ID)
+    } else if (oldBuildId !== String(BUILD_ID)) {
+      localStorage.clear()
+      localStorage.setItem('build_id', BUILD_ID)
+      console.log('Frontend restart deteced. Cleared localStorage')
+    }
+  }, [])
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.href.split('?')[1])

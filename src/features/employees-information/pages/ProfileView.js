@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { CRow, CCol, CButton, CFormInput, CCard, CCardBody } from '@coreui/react'
 import { cilPlus } from '@coreui/icons'
-import { EmployeeTable, MyDropdown } from '../components/common/MyComponents'
+import { MyDropdown } from '../components/common/MyComponents'
 import CIcon from '@coreui/icons-react'
+import { SearchableTable } from '../../../components/zReuse/zComponents'
+import { employeeColumns } from './components/tableColumns'
 
 const data = [
   {
@@ -140,7 +142,7 @@ const ProfileView = () => {
         </CRow>
 
         {/* Table */}
-        <EmployeeTable data={filteredData} />
+        <SearchableTable columns={employeeColumns} data={filteredData} />
       </CCardBody>
     </CCard>
   )
