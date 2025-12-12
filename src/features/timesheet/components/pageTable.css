@@ -1,0 +1,95 @@
+.shift-table-container {
+  /* Bọc table trong 1 div để đảm bảo nó nằm gọn trong card */
+  width: 100%;
+}
+
+.sortable-header {
+  cursor: pointer;
+}
+
+/* === PHẦN ĐÓNG BĂNG CỘT === */
+
+.sticky-col-first {
+  position: -webkit-sticky;
+  /* Hỗ trợ Safari */
+  position: sticky;
+  left: 0;
+  /* Đóng băng ở bên trái */
+  z-index: 10;
+  /* Nằm trên các cột khác */
+
+  /* (Rất quan trọng) Phải có màu nền, nếu không sẽ bị trong suốt */
+  background-color: var(--cui-table-bg, #fff);
+}
+
+.sticky-col-last {
+  position: -webkit-sticky;
+  /* Hỗ trợ Safari */
+  position: sticky;
+  right: 0;
+  /* Đóng băng ở bên phải */
+  z-index: 10;
+  /* Nằm trên các cột khác */
+
+  /* (Rất quan trọng) Phải có màu nền */
+  background-color: var(--cui-table-bg, #fff);
+}
+
+/* (Tùy chọn) Thêm 1 cái bóng mờ nhỏ để báo hiệu cột bị che */
+.sticky-col-first {
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.sticky-col-last {
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+
+/* === PHẦN HIỆU ỨNG HOVER (Cho cột dính) === */
+
+/* Ô "HÀNH ĐỘNG" (ô <td> cuối cùng) */
+.action-cell-container {
+  position: relative;
+  width: 90px;
+  /* Đặt chiều rộng cố định cho cột dính */
+}
+
+/* Tiêu đề "HÀNH ĐỘNG" (ô <th> cuối cùng) */
+.action-header {
+  text-align: right;
+  width: 90px;
+  /* Phải khớp với chiều rộng của ô data */
+}
+
+/* Khung chứa các nút (Sửa, Xóa) */
+.row-actions {
+  /* Ẩn đi theo mặc định */
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+
+  /* Vị trí "nổi" (so với .action-cell-container) */
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  /* Căn chỉnh nút */
+  display: flex;
+  gap: 8px;
+}
+
+/* Khi hover vào HÀNG (tr) BẤT KỲ */
+tbody tr:hover .row-actions {
+  /* Hiện các nút lên */
+  visibility: visible;
+  opacity: 1;
+}
+
+/* (Quan trọng) Khi hover, nền của cột dính cũng phải đổi màu
+   Vì CoreUI dùng 'var(--cui-table-hover-bg)'
+*/
+tbody tr:hover .sticky-col-first,
+tbody tr:hover .sticky-col-last {
+  background-color: var(--cui-table-hover-bg);
+}

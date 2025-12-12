@@ -58,12 +58,16 @@ import employeePagesRoutes from './features/employee/routes'
 const Employee = React.lazy(() => import('./features/employee/index'))
 const PayrollModule = React.lazy(() => import('./features/payroll'))
 
+const TimesheetModule = React.lazy(() => import('./features/timesheet'))
+
 const routes = [
   ...employeesInformationRoutes,
   ...systemRoutes,
   ...employeePagesRoutes,
   { path: '/', exact: true, name: 'Home' },
   // { path: '/employee', name: 'Employee', element: Employee },
+  { path: '/employee', name: 'Employee', element: Employee },
+  { path: '/timesheet/*', name: 'Timesheet', element: TimesheetModule },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
@@ -108,7 +112,7 @@ const routes = [
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
-  { path: '/payroll/*', name: 'Payroll', element: PayrollModule}
+  { path: '/payroll/*', name: 'Payroll', element: PayrollModule },
 ]
 
 export default routes

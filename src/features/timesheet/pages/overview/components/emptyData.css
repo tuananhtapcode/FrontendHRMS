@@ -1,0 +1,21 @@
+.empty-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-family: Arial, sans-serif;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.empty-data-icon {
+  opacity: 0.5;
+  color: #d8dbe0;
+  font-size: 48px; /* Tăng kích thước icon */
+}
+
+.empty-data-text {
+  margin-top: 12px;
+  font-size: 14px;
+}
