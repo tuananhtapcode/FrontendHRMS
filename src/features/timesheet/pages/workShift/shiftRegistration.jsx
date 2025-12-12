@@ -141,8 +141,36 @@ const PageStyles = () => (
     .sticky-col-first { position: sticky; left: 0; z-index: 11; background-color: #fff; }
     .sticky-col-last { position: sticky; right: 0; z-index: 11; background-color: #fff; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
     .action-cell-container { position: relative; height: 100%; min-width: 90px; }
-    .row-actions { visibility: hidden; opacity: 0; transition: opacity 0.2s; position: absolute; top: 50%; right: 10px; transform: translateY(-50%); display: flex; gap: 5px; }
-    tbody tr:hover .row-actions { visibility: visible; opacity: 1; }
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(4px);
+      transition: all 0.15s ease-in-out;
+    }
+
+    tbody tr:hover .row-actions {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .btn-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.15s;
+    }
+    .btn-action:hover { background: #f1f5f9; transform: scale(1.05); }
+    .btn-action.edit:hover { color: #f59e0b; background-color: #fef3c7; }
+    .btn-action.delete:hover { color: #ef4444; background-color: #fee2e2; }
     
     input[type="date"]::-webkit-calendar-picker-indicator {
       opacity: 0;
@@ -277,67 +305,142 @@ const FilterBar = ({ filters, onFilterChange, onReload, columns, onUpdateColumns
 // 4. TABLE COMPONENT
 // =====================================================================
 const PageTable = ({ data, columns, onEdit, onDelete, onStatusClick }) => {
-  const visibleCols = columns.filter(col => col.visible);
+  const visibleColumns = columns.filter(col => col.visible);
 
   return (
     <div className="table-wrapper-fullscreen">
-      <CTable hover className="mb-0" align="middle" style={{ minWidth: 'max-content' }}>
+      <CTable hover className="mb-0" align="middle" style={{ minWidth: "max-content" }}>
+
+        {/* ================= HEADER ================= */}
         <CTableHead>
           <CTableRow>
-            {visibleCols.map((col) => {
+            {visibleColumns.map((col) => {
               let className = "table-header-cell";
-              if (col.key === 'checkbox') className += " sticky-col-first";
-              if (col.key === 'actions') className += " sticky-col-last";
+
+              if (col.fixed || col.key === "checkbox") className += " sticky-col-first";
+              if (col.key === "actions") className += " sticky-col-last";
               if (col.align) className += ` text-${col.align}`;
-              return <CTableHeaderCell key={col.key} className={className} style={{ width: col.width }}>{col.key === 'checkbox' ? <CFormCheck /> : col.label}</CTableHeaderCell>
+
+              return (
+                <CTableHeaderCell
+                  key={col.key}
+                  className={className}
+                  style={{ width: col.width }}
+                >
+                  {col.key === "checkbox"
+                    ? <div className="text-center"><CFormCheck /></div>
+                    : col.label}
+                </CTableHeaderCell>
+              );
             })}
           </CTableRow>
         </CTableHead>
+
+        {/* ================= BODY ================= */}
         <CTableBody>
           {data.length === 0 ? (
-            <CTableRow><CTableDataCell colSpan={visibleCols.length} className="text-center p-4">Không tìm thấy dữ liệu</CTableDataCell></CTableRow>
+            <CTableRow>
+              <CTableDataCell
+                colSpan={visibleColumns.length}
+                className="text-center py-4 text-muted"
+              >
+                Không tìm thấy dữ liệu
+              </CTableDataCell>
+            </CTableRow>
           ) : (
             data.map((item) => (
               <CTableRow key={item.id}>
-                {visibleCols.map((col) => {
-                  if (col.key === 'checkbox') return <CTableDataCell key={col.key} className="sticky-col-first"><CFormCheck /></CTableDataCell>
-                  if (col.key === 'actions') return (
-                    <CTableDataCell key={col.key} className="sticky-col-last action-cell-container">
-                      <div className="row-actions">
-                        <CButton size="sm" color="warning" variant="outline" onClick={() => onEdit(item)}><CIcon icon={cilPencil} /></CButton>
-                        <CButton size="sm" color="danger" variant="outline" onClick={() => onDelete(item)}><CIcon icon={cilTrash} /></CButton>
+                {visibleColumns.map((col) => {
+                  // ---------- Sticky class ----------
+                  let className = "";
+                  if (col.fixed || col.key === "checkbox") className += " sticky-col-first";
+                  if (col.key === "actions") className += " sticky-col-last";
+                  if (col.align) className += ` text-${col.align}`;
+
+                  let content = item[col.key];
+
+                  // ---------- Checkbox ----------
+                  if (col.key === "checkbox") {
+                    content = (
+                      <div className="text-center">
+                        <CFormCheck />
                       </div>
-                    </CTableDataCell>
-                  )
-                  if (col.key === 'manager') return (
-                    <CTableDataCell key={col.key}>
+                    );
+                  }
+
+                  // ---------- Manager ----------
+                  if (col.key === "manager") {
+                    content = (
                       <div className="manager-cell">
                         <div className="manager-avatar">{item.managerAvatar}</div>
                         {item.managerName}
                       </div>
+                    );
+                  }
+
+                  // ---------- Deadline ----------
+                  if (col.key === "deadline") {
+                    content = (
+                      <span className={item.deadlineExpired ? "text-danger" : ""}>
+                        {item.deadline}
+                        {item.deadlineExpired ? " (Đã hết hạn)" : ""}
+                      </span>
+                    );
+                  }
+
+                  // ---------- Status (clickable) ----------
+                  if (col.key === "status") {
+                    content = (
+                      <span className="text-link" onClick={() => onStatusClick(item)}>
+                        {item.status}
+                      </span>
+                    );
+                  }
+
+                  // ---------- ACTIONS ----------
+                  if (col.key === "actions") {
+                    content = (
+                      <div className="row-actions">
+                        <CTooltip content="Chỉnh sửa">
+                          <button
+                            className="btn-action edit"
+                            onClick={() => onEdit(item)}
+                          >
+                            <CIcon icon={cilPencil} />
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Xóa">
+                          <button
+                            className="btn-action delete"
+                            onClick={() => onDelete(item)}
+                          >
+                            <CIcon icon={cilTrash} />
+                          </button>
+                        </CTooltip>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <CTableDataCell
+                      key={`${item.id}-${col.key}`}
+                      className={className}
+                      style={{ fontSize: "0.9rem", color: "#333" }}
+                    >
+                      {content}
                     </CTableDataCell>
-                  )
-                  if (col.key === 'deadline') return (
-                    <CTableDataCell key={col.key}>
-                      <span className={item.deadlineExpired ? 'text-danger' : ''}>{item.deadline} {item.deadlineExpired ? '(Đã hết hạn)' : ''}</span>
-                    </CTableDataCell>
-                  )
-                  if (col.key === 'status') return (
-                    <CTableDataCell key={col.key}>
-                      <span className="text-link" onClick={() => onStatusClick(item)}>{item.status}</span>
-                    </CTableDataCell>
-                  )
-                  let className = col.align ? ` text-${col.align}` : "";
-                  return <CTableDataCell key={col.key} className={className}>{item[col.key]}</CTableDataCell>
+                  );
                 })}
               </CTableRow>
             ))
           )}
         </CTableBody>
+
       </CTable>
     </div>
-  )
-}
+  );
+};
 
 // =====================================================================
 // 5. MOCK DATA (Dữ liệu mẫu)
