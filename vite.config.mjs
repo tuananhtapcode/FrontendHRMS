@@ -44,6 +44,11 @@ export default defineConfig(() => {
       port: 3000,
       proxy: {
         // https://vitejs.dev/config/server-options.html
+        '/api': {
+          target: 'http://localhost:1234', // Trỏ về Backend của bạn
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     define: {

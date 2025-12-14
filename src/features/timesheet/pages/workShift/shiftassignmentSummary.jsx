@@ -17,7 +17,6 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
-  CRow,
   CSpinner,
   CTooltip
 } from '@coreui/react'
@@ -38,10 +37,14 @@ import {
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
+// IMPORT API
+import { shiftscheduleApi } from '../../api/shiftscheduleApi'
+
 // =====================================================================
 // 0. DATE UTILS
 // =====================================================================
 const formatDateParam = (date) => {
+    if (!date) return '';
     const d = new Date(date);
     const year = d.getFullYear();
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -51,7 +54,8 @@ const formatDateParam = (date) => {
 
 const formatDisplayDate = (dateStr) => {
     if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
+    const cleanDate = dateStr.split('T')[0];
+    const [year, month, day] = cleanDate.split('-');
     return `${day}/${month}/${year}`;
 };
 
@@ -85,7 +89,7 @@ const generateDaysArray = (start, end) => {
 };
 
 // =====================================================================
-// 1. CSS CUSTOM (Đã thêm CSS cho nút Sửa/Xóa khi hover)
+// 1. CSS CUSTOM
 // =====================================================================
 const ShiftSummaryStyles = () => (
   <style>
@@ -104,14 +108,12 @@ const ShiftSummaryStyles = () => (
     .filter-left { display: flex; gap: 12px; align-items: center; }
     .filter-left .search-bar { width: 250px; }
     
-    
     .date-range-picker { display: flex; align-items: center; border: 1px solid #ccc; border-radius: 0.375rem; background: #fff; }
     .date-range-picker .btn { border: none; }
     .date-range-text { padding: 0 0.5rem; font-weight: 500; font-size: 0.9rem; min-width: 220px; text-align: center; }
     .date-range-icon { padding: 0 0.5rem; border-left: 1px solid #ccc; cursor: pointer; color: #666; }
     .date-range-icon:hover { background-color: #f0f0f0; }
 
-    /* Container Grid */
     .schedule-grid-container { flex-grow: 1; overflow: auto; border: 1px solid #ccc; border-radius: 0.375rem; position: relative; scroll-behavior: smooth; }
     .schedule-grid { display: grid; width: max-content; min-width: 100%; }
 
@@ -134,200 +136,121 @@ const ShiftSummaryStyles = () => (
     .employee-name { font-weight: 500; font-size: 0.9rem; }
     .employee-id { font-size: 0.75rem; color: #8a93a2; }
 
-    /* === SHIFT CELL & HOVER ACTIONS === */
-    .shift-cell { 
-        min-height: 60px; 
-        vertical-align: top; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: flex-start; 
-        justify-content: center;
-        position: relative; /* Để định vị nút action */
-    }
-    .shift-cell:hover {
-        background-color: #f8f9fa;
-    }
+    .shift-cell { min-height: 60px; vertical-align: top; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; position: relative; }
+    .shift-cell:hover { background-color: #f8f9fa; }
     .shift-cell.is-today-col { background-color: #fff8f8; }
-    
     .shift-tag { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; color: #333; }
     .shift-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; background-color: #333; }
     .shift-time { font-size: 0.75rem; color: #768192; margin-left: 12px; margin-top: 1px; }
 
-    /* Action Container: Ẩn mặc định, Hiện khi hover */
-    .cell-hover-actions {
-        display: none;
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 4px;
-        padding: 2px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        z-index: 5;
-    }
-    .shift-cell:hover .cell-hover-actions {
-        display: flex;
-        gap: 4px;
-    }
-    .action-btn-mini {
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        background: transparent;
-        color: #768192;
-        border-radius: 3px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
+    .cell-hover-actions { display: none; position: absolute; top: 4px; right: 4px; background: rgba(255, 255, 255, 0.9); border-radius: 4px; padding: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 5; }
+    .shift-cell:hover .cell-hover-actions { display: flex; gap: 4px; }
+    .action-btn-mini { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #768192; border-radius: 3px; cursor: pointer; transition: all 0.2s; }
     .action-btn-mini:hover { background-color: #ebedef; }
     .action-btn-mini.edit:hover { color: #ea580c; background-color: #fff7ed; }
     .action-btn-mini.delete:hover { color: #e55353; background-color: #fee2e2; }
 
-    /* Settings Popup */
     .settings-popup { position: absolute; top: 100%; right: 0; width: 320px; background: white; border: 1px solid #d8dbe0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; z-index: 100; margin-top: 5px; }
     .popup-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #ebedef; font-weight: 700; }
     .popup-body { padding: 16px; }
     .popup-section { margin-bottom: 16px; }
     .popup-section-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; display: block; }
     .popup-footer { padding: 12px 16px; border-top: 1px solid #ebedef; display: flex; justify-content: flex-end; gap: 8px; background-color: #f9fafb; }
-    .text-orange { color: #ea580c; cursor: pointer; font-weight: 500; text-decoration: none; }
-    .text-orange:hover { text-decoration: underline; }
-    .selected-items-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-    .selected-item-tag { background: #f3f4f7; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
     `}
   </style>
 )
 
 // =====================================================================
-// 2. MOCK DATA
-// =====================================================================
-const [MOCK_EMPLOYEES, MOCK_SHIFTS, MOCK_AVAILABLE_SHIFTS, MOCK_ORG_UNITS] = (() => {
-  const employees = [
-    { id: 'NV000001', name: 'Thuận Nguyễn', avatar: 'TN', unit: 'Phòng Kỹ Thuật', job: 'Developer' },
-    { id: 'NV000002', name: 'Trần Hải Lâm', avatar: 'TL', unit: 'Phòng Kỹ Thuật', job: 'Tester' },
-    { id: 'NV000003', name: 'Phạm Thành Nam', avatar: 'PN', unit: 'Phòng Nhân Sự', job: 'HR' },
-    { id: 'NV000004', name: 'Lê Văn C', avatar: 'LC', unit: 'Phòng Nhân Sự', job: 'HR' },
-    { id: 'NV000005', name: 'Nguyễn Văn Empty', avatar: 'NE', unit: 'Kho', job: 'Thủ kho' },
-  ]
-
-  const today = new Date();
-  const currentMonthPrefix = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
-  const dayStr = today.getDate().toString().padStart(2, '0');
-  
-  const shifts = [
-    { id: 1, employeeId: 'NV000001', date: `${currentMonthPrefix}-${dayStr}`, shiftCode: 'HC', startTime: '08:00', endTime: '17:30' },
-    { id: 2, employeeId: 'NV000001', date: `${currentMonthPrefix}-02`, shiftCode: 'HC', startTime: '08:00', endTime: '17:30' },
-    { id: 3, employeeId: 'NV000002', date: `${currentMonthPrefix}-${dayStr}`, shiftCode: 'TCT', startTime: '08:00', endTime: '08:30' },
-  ]
-
-  const availableShifts = [
-      { id: 'HC', name: 'HC (08:00 - 17:30)', start: '08:00', end: '17:30' },
-      { id: 'abc123', name: 'abc123 (08:00 - 08:30)', start: '08:00', end: '08:30' },
-      { id: 'TCT', name: 'TCT (08:00 - 08:30)', start: '08:00', end: '08:30' },
-      { id: 'CA_CHIEU', name: 'Ca Chiều (13:30 - 22:00)', start: '13:30', end: '22:00' },
-  ]
-
-  const orgUnits = [
-      { id: 'PKT', name: 'Phòng Kỹ Thuật' },
-      { id: 'PNS', name: 'Phòng Nhân Sự' },
-      { id: 'KHO', name: 'Kho' },
-  ]
-
-  return [employees, shifts, availableShifts, orgUnits]
-})()
-
-// =====================================================================
-// 3. SUB-COMPONENTS
+// 2. SUB-COMPONENTS
 // =====================================================================
 
-const SelectionModal = ({ visible, onClose, type, data, selectedIds, onConfirm }) => {
-    const [localSelected, setLocalSelected] = useState([]);
-    useEffect(() => { if(visible) setLocalSelected(selectedIds); }, [visible, selectedIds]);
-    const handleToggle = (id) => setLocalSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-
-    return (
-        <CModal visible={visible} onClose={onClose} alignment="center">
-            <CModalHeader><CModalTitle>Chọn {type === 'employee' ? 'nhân viên' : 'cơ cấu'}</CModalTitle></CModalHeader>
-            <CModalBody style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                <CInputGroup className="mb-3"><CInputGroupText><CIcon icon={cilSearch} /></CInputGroupText><CFormInput placeholder="Tìm kiếm..." /></CInputGroup>
-                {data.map(item => (
-                    <div key={item.id} className="d-flex align-items-center mb-2 p-2 border-bottom">
-                        <CFormCheck checked={localSelected.includes(item.id)} onChange={() => handleToggle(item.id)} id={`select-${item.id}`} />
-                        <label htmlFor={`select-${item.id}`} className="ms-2 flex-grow-1 cursor-pointer">
-                            <div className="fw-bold">{item.name}</div>
-                            {type === 'employee' && <div className="small text-muted">{item.id}</div>}
-                        </label>
-                    </div>
-                ))}
-            </CModalBody>
-            <CModalFooter>
-                <CButton color="secondary" variant="ghost" onClick={onClose}>Hủy</CButton>
-                <CButton color="primary" onClick={() => onConfirm(localSelected)}>Xác nhận</CButton>
-            </CModalFooter>
-        </CModal>
-    )
-}
-
-// --- MODAL SỬA CA LÀM VIỆC (EDIT SHIFT MODAL) ---
+// --- MODAL CHỌN CA TỪ DATABASE (ĐÃ SỬA LỖI TÌM ID) ---
 const EditShiftModal = ({ visible, onClose, onSave, targetCell, availableShifts, employees }) => {
-    const [selectedShift, setSelectedShift] = useState('');
+    const [selectedShiftId, setSelectedShiftId] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (visible && targetCell) {
-            // Nếu đã có ca, tự động chọn ca đó
-            const currentShift = targetCell.shifts && targetCell.shifts.length > 0 ? targetCell.shifts[0].shiftCode : '';
-            setSelectedShift(currentShift);
+            const currentShiftCode = targetCell.shifts && targetCell.shifts.length > 0 ? targetCell.shifts[0].shiftCode : '';
+            
+            // Tìm shift tương ứng để set giá trị mặc định
+            const found = availableShifts.find(s => s.code === currentShiftCode || s.id === currentShiftCode || s.name.startsWith(currentShiftCode));
+            
+            // Lưu ý: convert về String để khớp với value của select option
+            setSelectedShiftId(found ? String(found.id) : '');
             setSearchTerm('');
         }
-    }, [visible, targetCell]);
+    }, [visible, targetCell, availableShifts]);
 
-    const employeeName = targetCell ? employees.find(e => e.id === targetCell.empId)?.name : '';
-    const filteredShifts = availableShifts.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const employeeName = targetCell ? employees.find(e => e.id === targetCell.empId)?.name : 'N/A';
+    
+    // Lọc danh sách
+    const filteredShifts = availableShifts.filter(s => 
+        (s.name && s.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
+        (s.code && s.code.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
 
     const handleSave = () => {
-        if (selectedShift) {
-            const shiftInfo = availableShifts.find(s => s.id === selectedShift);
-            onSave(shiftInfo);
+        if (!selectedShiftId) {
+            alert("Vui lòng chọn một ca làm việc!");
+            return;
         }
+
+        // --- SỬA QUAN TRỌNG TẠI ĐÂY ---
+        // Ép kiểu về String để so sánh chính xác (vì value của select luôn là string)
+        const shiftInfo = availableShifts.find(s => String(s.id) === String(selectedShiftId));
+        
+        if (!shiftInfo) {
+            console.error("Không tìm thấy thông tin ca với ID:", selectedShiftId);
+            alert("Lỗi dữ liệu ca làm việc. Vui lòng tải lại trang.");
+            return;
+        }
+
+        onSave(shiftInfo); 
         onClose();
     };
 
     return (
         <CModal visible={visible} onClose={onClose} alignment="center">
-            <CModalHeader><CModalTitle>Cập nhật ca làm việc</CModalTitle></CModalHeader>
+            <CModalHeader><CModalTitle>Phân ca cho nhân viên</CModalTitle></CModalHeader>
             <CModalBody>
-                <p className="mb-2"><strong>Nhân viên:</strong> {employeeName} ({targetCell?.empId})</p>
-                <p className="mb-3"><strong>Ngày:</strong> {formatDisplayDate(targetCell?.date)}</p>
+                <div className="mb-3 p-3 bg-light rounded border">
+                    <div><strong>Nhân viên:</strong> {employeeName}</div>
+                    <div><strong>Mã NV:</strong> {targetCell?.empId}</div>
+                    <div><strong>Ngày:</strong> {formatDisplayDate(targetCell?.date)}</div>
+                </div>
                 
-                <CFormLabel>Chọn ca làm việc</CFormLabel>
+                <CFormLabel>Chọn Ca Làm Việc</CFormLabel>
                 <CInputGroup className="mb-2">
                     <CInputGroupText><CIcon icon={cilSearch}/></CInputGroupText>
-                    <CFormInput placeholder="Tìm kiếm ca..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <CFormInput placeholder="Tìm tên ca..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </CInputGroup>
                 
-                <CFormSelect size="lg" value={selectedShift} onChange={(e) => setSelectedShift(e.target.value)}>
-                    <option value="">-- Chọn ca --</option>
+                <CFormSelect 
+                    size="lg" 
+                    value={selectedShiftId} 
+                    onChange={(e) => setSelectedShiftId(e.target.value)}
+                >
+                    <option value="">-- Chọn ca làm việc --</option>
                     {filteredShifts.map(s => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
+                        <option key={s.id} value={s.id}>
+                            {s.name} ({s.start} - {s.end})
+                        </option>
                     ))}
                 </CFormSelect>
+                {filteredShifts.length === 0 && <div className="text-danger small mt-2">Không tìm thấy ca nào.</div>}
             </CModalBody>
             <CModalFooter>
                 <CButton color="light" onClick={onClose}>Hủy</CButton>
-                <CButton className="btn-orange" onClick={handleSave}>Lưu</CButton>
+                <CButton className="btn-orange" onClick={handleSave}>Lưu thay đổi</CButton>
             </CModalFooter>
         </CModal>
     );
 };
 
-// --- MODAL XÓA CA LÀM VIỆC (DELETE CONFIRM MODAL) ---
+// --- MODAL XÓA CA ---
 const DeleteShiftModal = ({ visible, onClose, onConfirm, targetCell, employees }) => {
     const employeeName = targetCell ? employees.find(e => e.id === targetCell.empId)?.name : '';
-    
     return (
         <CModal visible={visible} onClose={onClose} alignment="center">
             <CModalHeader><CModalTitle>Xác nhận xóa</CModalTitle></CModalHeader>
@@ -345,60 +268,19 @@ const DeleteShiftModal = ({ visible, onClose, onConfirm, targetCell, employees }
 const DateRangeModal = ({ visible, onClose, initialStart, initialEnd, onApply }) => {
     const [start, setStart] = useState(initialStart);
     const [end, setEnd] = useState(initialEnd);
-
-    useEffect(() => {
-        if(visible) { setStart(initialStart); setEnd(initialEnd); }
-    }, [visible, initialStart, initialEnd]);
-
+    useEffect(() => { if(visible) { setStart(initialStart); setEnd(initialEnd); } }, [visible, initialStart, initialEnd]);
     return (
         <CModal visible={visible} onClose={onClose} alignment="center" size="sm">
-            <CModalHeader><CModalTitle>Chọn khoảng thời gian</CModalTitle></CModalHeader>
+            <CModalHeader><CModalTitle>Chọn thời gian</CModalTitle></CModalHeader>
             <CModalBody>
-                <div className="mb-3">
-                    <CFormLabel>Từ ngày</CFormLabel>
-                    <CFormInput type="date" value={start} onChange={e => setStart(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <CFormLabel>Đến ngày</CFormLabel>
-                    <CFormInput type="date" value={end} onChange={e => setEnd(e.target.value)} />
-                </div>
+                <div className="mb-3"><CFormLabel>Từ ngày</CFormLabel><CFormInput type="date" value={start} onChange={e => setStart(e.target.value)} /></div>
+                <div className="mb-3"><CFormLabel>Đến ngày</CFormLabel><CFormInput type="date" value={end} onChange={e => setEnd(e.target.value)} /></div>
             </CModalBody>
             <CModalFooter>
                 <CButton color="light" onClick={onClose}>Hủy</CButton>
                 <CButton className="btn-orange" onClick={() => { onApply(start, end); onClose(); }}>Áp dụng</CButton>
             </CModalFooter>
         </CModal>
-    )
-}
-
-const BulkAssignmentModal = ({ visible, onClose, availableShifts, employees, orgUnits }) => {
-    const [formData, setFormData] = useState({ shiftId: '', date: new Date().toISOString().split('T')[0], targetType: 'employee', selectedTargets: [] });
-    const [showSelection, setShowSelection] = useState(false);
-    useEffect(() => { if(visible) setFormData({ shiftId: '', date: new Date().toISOString().split('T')[0], targetType: 'employee', selectedTargets: [] }) }, [visible]);
-    
-    return (
-        <>
-            <CModal visible={visible} onClose={onClose} alignment="center" size="lg">
-                <CModalHeader><CModalTitle className="fw-bold">Phân ca hàng loạt</CModalTitle></CModalHeader>
-                <CModalBody>
-                    <CRow className="mb-3">
-                        <CFormLabel className="col-sm-3 fw-bold">Ca làm việc <span className="text-danger">*</span></CFormLabel>
-                        <CCol sm={9}><CFormSelect value={formData.shiftId} onChange={(e) => setFormData(p => ({...p, shiftId: e.target.value}))}><option value="">-- Chọn ca --</option>{availableShifts.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</CFormSelect></CCol>
-                    </CRow>
-                    <CRow className="mb-3">
-                        <CFormLabel className="col-sm-3 fw-bold">Thời gian áp dụng <span className="text-danger">*</span></CFormLabel>
-                        <CCol sm={9}><CFormInput type="date" value={formData.date} onChange={(e) => setFormData(p => ({...p, date: e.target.value}))} /></CCol>
-                    </CRow>
-                    <CRow className="mb-3">
-                        <CFormLabel className="col-sm-3 fw-bold">Đối tượng</CFormLabel>
-                        <CCol sm={9} className="d-flex gap-4"><CFormCheck type="radio" label="Cơ cấu tổ chức" checked={formData.targetType === 'org'} onChange={() => setFormData(p => ({...p, targetType: 'org', selectedTargets: []}))} /><CFormCheck type="radio" label="Nhân viên" checked={formData.targetType === 'employee'} onChange={() => setFormData(p => ({...p, targetType: 'employee', selectedTargets: []}))} /></CCol>
-                    </CRow>
-                    <CRow><CCol sm={{ offset: 3, span: 9 }}><span className="text-orange" onClick={() => setShowSelection(true)}>+ Thêm {formData.targetType === 'employee' ? 'người' : 'cơ cấu'}</span><div className="selected-items-list">{formData.selectedTargets.map(id => (<div key={id} className="selected-item-tag border">{(formData.targetType === 'employee' ? employees : orgUnits).find(i => i.id === id)?.name || id}<CIcon icon={cilX} size="sm" className="cursor-pointer text-secondary" onClick={() => setFormData(p => ({...p, selectedTargets: p.selectedTargets.filter(tid => tid !== id)}))} /></div>))}</div></CCol></CRow>
-                </CModalBody>
-                <CModalFooter><CButton color="light" onClick={onClose}>Hủy</CButton><CButton className="btn-orange" onClick={() => { alert('Đã lưu!'); onClose(); }}>Lưu</CButton></CModalFooter>
-            </CModal>
-            <SelectionModal visible={showSelection} onClose={() => setShowSelection(false)} type={formData.targetType} data={formData.targetType === 'employee' ? employees : orgUnits} selectedIds={formData.selectedTargets} onConfirm={(ids) => { setFormData(p => ({...p, selectedTargets: ids})); setShowSelection(false); }} />
-        </>
     )
 }
 
@@ -423,8 +305,11 @@ const SettingsPopup = ({ visible, onClose, currentSettings, onSave }) => {
 // =====================================================================
 const ShiftAssignmentSummary = () => {
   const [employees, setEmployees] = useState([])
+  const [shifts, setShifts] = useState({}) 
+  const [availableShifts, setAvailableShifts] = useState([]); 
+  const [orgUnits, setOrgUnits] = useState([]);
+  
   const [displayedEmployees, setDisplayedEmployees] = useState([]) 
-  const [shifts, setShifts] = useState({}) // Object: { "NV01_2025-12-01": [ShiftData] }
   const [weekDays, setWeekDays] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -439,42 +324,173 @@ const ShiftAssignmentSummary = () => {
   const [viewSettings, setViewSettings] = useState({ showTime: false, grouped: false, groupBy: 'unit' })
   
   const [showSettings, setShowSettings] = useState(false)
-  const [showBulkModal, setShowBulkModal] = useState(false)
   const [showDateRangeModal, setShowDateRangeModal] = useState(false)
   
-  // -- State quản lý Modal Sửa/Xóa đơn lẻ --
   const [modalState, setModalState] = useState({
       editVisible: false,
       deleteVisible: false,
-      targetCell: null // { empId, date, shifts: [] }
+      targetCell: null 
   });
 
-  // State để kích hoạt scroll
   const [triggerScrollToToday, setTriggerScrollToToday] = useState(false);
   const scrollContainerRef = useRef(null); 
-
   const navigate = useNavigate()
+
+  // 1. Fetch Dữ liệu Tĩnh (Employees, Shifts, Departments)
+  useEffect(() => {
+    const fetchStaticData = async () => {
+        try {
+            // --- A. LẤY NHÂN VIÊN (GỘP TRANG NHƯ ĐÃ SỬA) ---
+            const firstEmpRes = await shiftscheduleApi.getAllEmployees({ page: 0, size: 50 });
+            const empData = firstEmpRes?.data?.data || firstEmpRes?.data || {};
+            
+            let allEmployees = [];
+            let totalPages = 1;
+
+            if (Array.isArray(empData)) {
+                allEmployees = empData;
+            } else {
+                const firstPageEmps = empData.employees || empData.content || [];
+                allEmployees = [...firstPageEmps];
+                totalPages = empData.totalPages || 1;
+            }
+
+            if (totalPages > 1) {
+                const promises = [];
+                for (let i = 1; i < totalPages; i++) {
+                    promises.push(shiftscheduleApi.getAllEmployees({ page: i, size: 50 }));
+                }
+                const results = await Promise.all(promises);
+                results.forEach(res => {
+                    const d = res?.data?.data || res?.data || {};
+                    const pageEmps = d.employees || d.content || [];
+                    allEmployees = [...allEmployees, ...pageEmps];
+                });
+            }
+
+            const formattedEmployees = allEmployees.map(e => ({
+                ...e,
+                id: e.employeeId || e.id,
+                name: e.fullName || e.name,
+                unit: e.departmentName || 'Chưa phân loại',
+                job: e.jobTitle || 'Nhân viên',
+                avatar: getInitials(e.fullName || e.name)
+            }));
+            setEmployees(formattedEmployees);
+
+
+            // --- B. LẤY CA LÀM VIỆC (FIXED) ---
+            const shiftRes = await shiftscheduleApi.getAllShifts(); // Gọi API
+            
+            // Xử lý dữ liệu trả về linh hoạt (Data wrapper, Pagination content, hoặc Array trực tiếp)
+            const shiftPayload = shiftRes?.data?.data || shiftRes?.data || {};
+            const rawShifts = Array.isArray(shiftPayload) 
+                ? shiftPayload 
+                : (shiftPayload.content || shiftPayload.data || []); // Lấy mảng ca từ trong object nếu có
+
+            if (Array.isArray(rawShifts)) {
+                const formattedShifts = rawShifts.map(s => ({
+                    id: s.shiftId || s.id, 
+                    code: s.shiftCode,     
+                    name: s.shiftName || s.name || s.shiftCode, // Tên hiển thị
+                    start: s.startTime,
+                    end: s.endTime
+                }));
+                setAvailableShifts(formattedShifts);
+            } else {
+                console.error("Dữ liệu Ca làm việc không đúng định dạng:", shiftPayload);
+                setAvailableShifts([]); // Set rỗng để tránh lỗi map
+            }
+
+
+            // --- C. LẤY PHÒNG BAN ---
+            const deptRes = await shiftscheduleApi.getAllDepartments();
+            const rawDepts = deptRes?.data?.data || deptRes?.data || [];
+            if (Array.isArray(rawDepts)) {
+                const formattedDepts = rawDepts.map(d => ({
+                    id: d.departmentId || d.id,
+                    name: d.departmentName || d.name
+                }));
+                setOrgUnits(formattedDepts);
+            }
+
+        } catch (error) {
+            console.error("Lỗi tải dữ liệu ban đầu:", error);
+        }
+    };
+    fetchStaticData();
+  }, []);
+
+  const getInitials = (name) => {
+      if(!name) return 'NV';
+      const parts = name.split(' ');
+      if(parts.length >= 2) return parts[0][0] + parts[parts.length-1][0];
+      return name.substring(0,2).toUpperCase();
+  }
 
   useEffect(() => {
       const days = generateDaysArray(startDate, endDate);
       setWeekDays(days);
   }, [startDate, endDate]);
 
-  useEffect(() => {
+  // 3. Fetch Assignments
+// 3. Fetch Assignments (ĐÃ SỬA KHỚP VỚI DTO BACKEND)
+  const fetchAssignments = async () => {
     setLoading(true);
-    setTimeout(() => {
-        setEmployees(MOCK_EMPLOYEES);
-        const shiftMap = MOCK_SHIFTS.reduce((acc, shift) => {
-            const key = `${shift.employeeId}_${shift.date}`;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(shift);
-            return acc;
-        }, {});
-        setShifts(shiftMap);
-        setLoading(false);
-    }, 300);
-  }, []); 
+    try {
+        const res = await shiftscheduleApi.getAllAssignments(startDate, endDate);
+        
+        // Backend trả về ApiResponse<List<DTO>>, dữ liệu nằm trong res.data.data
+        const data = res?.data?.data || res?.data || [];
+        
+        const shiftMap = {};
+        
+        if (Array.isArray(data)) {
+            data.forEach(item => {
+                // --- SỬA QUAN TRỌNG TẠI ĐÂY ---
+                // Backend trả về 'assignmentDate', không phải 'date'
+                // Ta lấy ưu tiên assignmentDate, nếu không có mới tìm date
+                const rawDate = item.assignmentDate || item.date;
 
+                if (!rawDate) {
+                    return; // Bỏ qua nếu không có ngày
+                }
+
+                try {
+                    // LocalDate của Java thường là "YYYY-MM-DD", không có chữ T
+                    // Nhưng cứ split('T')[0] cho an toàn (nếu chuỗi không có T nó vẫn lấy đúng)
+                    const itemDate = rawDate.split('T')[0];
+                    
+                    const key = `${item.employeeId}_${itemDate}`;
+                    
+                    if (!shiftMap[key]) shiftMap[key] = [];
+                    
+                    shiftMap[key].push({
+                        id: item.shiftAssignmentId || item.assignmentId || item.id, // Backend DTO dùng shiftAssignmentId
+                        shiftCode: item.shiftCode || item.shiftName || 'Shift',
+                        // Backend DTO trả về startTime/endTime dạng LocalTime ("08:00:00")
+                        startTime: item.startTime, 
+                        endTime: item.endTime,
+                        ...item
+                    });
+                } catch (err) {
+                    console.error("Lỗi parse data dòng:", item);
+                }
+            });
+        }
+        setShifts(shiftMap);
+    } catch (error) {
+        console.error("Lỗi tải dữ liệu phân ca:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [startDate, endDate]);
+
+  // Logic Scroll & Filter
   useEffect(() => {
       if (triggerScrollToToday && !loading && weekDays.length > 0) {
           setTimeout(() => {
@@ -509,7 +525,6 @@ const ShiftAssignmentSummary = () => {
     }
   }, [filters, employees, shifts, weekDays]);
 
-  // --- Handlers cho Date Nav ---
   const handlePrevMonth = () => {
       const curr = new Date(startDate);
       curr.setMonth(curr.getMonth() - 1);
@@ -546,58 +561,111 @@ const ShiftAssignmentSummary = () => {
   }, [displayedEmployees, viewSettings]);
 
   const getShiftsForCell = (employeeId, date) => {
-    const key = `${employeeId}_${date}`;
-    return shifts[key] || [];
+    const key = `${employeeId}_date`; // Note: Logic cũ dùng _date nhưng ở fetch dùng _itemDate. 
+    // Tuy nhiên hàm fetch đã setShifts đúng key. Ở đây cần dùng đúng key để lấy.
+    // Sửa lại cho khớp với logic fetch:
+    const keyCorrect = `${employeeId}_${date}`;
+    return shifts[keyCorrect] || [];
   }
 
-  // --- HANDLER SỬA/XÓA CA ---
+  // --- HANDLER CLICK VÀO Ô ---
   const handleCellClick = (action, empId, date, cellShifts) => {
       const target = { empId, date, shifts: cellShifts };
       if (action === 'edit') {
+          // Mở modal Edit
           setModalState({ ...modalState, editVisible: true, targetCell: target });
       } else if (action === 'delete') {
-          // Chỉ mở modal xóa nếu có ca
           if (cellShifts && cellShifts.length > 0) {
               setModalState({ ...modalState, deleteVisible: true, targetCell: target });
           }
       }
   }
 
-  const handleSaveShift = (newShiftInfo) => {
+  // --- HANDLE SAVE (BẢN CHUẨN KHỚP VỚI BACKEND) ---
+  const handleSaveShift = async (selectedShiftInfo) => {
       const { targetCell } = modalState;
-      if (!targetCell || !newShiftInfo) return;
+      if (!targetCell || !selectedShiftInfo) return;
 
-      const key = `${targetCell.empId}_${targetCell.date}`;
-      const newShiftEntry = {
-          id: Date.now(), // Fake ID
-          employeeId: targetCell.empId,
-          date: targetCell.date,
-          shiftCode: newShiftInfo.id,
-          startTime: newShiftInfo.start,
-          endTime: newShiftInfo.end
+      // 1. Ép kiểu ID về số (Backend: Long)
+      const safeEmployeeId = Number(targetCell.empId);
+      const safeShiftId = Number(selectedShiftInfo.id);
+
+      // 2. Xử lý ngày: Backend yêu cầu "yyyy-MM-dd" (LocalDate)
+      // targetCell.date gốc đã là "YYYY-MM-DD" nên ta giữ nguyên.
+      // Tuyệt đối KHÔNG thêm "T00:00:00"
+      const safeDate = targetCell.date.split('T')[0]; 
+
+      // 3. Payload đúng chuẩn ShiftAssignmentDTO
+      const payload = {
+          employeeId: safeEmployeeId,
+          shiftId: safeShiftId,
+          assignmentDate: safeDate, // Tên trường phải là assignmentDate, không phải date
+          isApproved: true, // Mặc định true (hoặc false tùy logic)
+          note: ""          // Gửi chuỗi rỗng nếu không có note
       };
 
-      // Cập nhật State: Ghi đè ca cũ bằng ca mới (hoặc thêm mới)
-      setShifts(prev => ({
-          ...prev,
-          [key]: [newShiftEntry]
-      }));
+      console.log("🔥 Payload chuẩn gửi đi:", payload);
+
+      try {
+        const response = await shiftscheduleApi.assignShift(payload);
+        console.log("✅ Server phản hồi:", response);
+
+        // --- CẬP NHẬT UI NGAY LẬP TỨC (Optimistic Update) ---
+        setShifts(prevShifts => {
+            const newShifts = { ...prevShifts };
+            const key = `${targetCell.empId}_${targetCell.date}`;
+            
+            // Tạo dữ liệu giả lập để hiển thị ngay trên bảng
+            const newDisplayShift = {
+                id: response.data?.data?.shiftAssignmentId || 'temp_' + Date.now(), // Lấy ID thật nếu có
+                shiftCode: selectedShiftInfo.code || selectedShiftInfo.name, 
+                startTime: selectedShiftInfo.start,
+                endTime: selectedShiftInfo.end,
+                employeeId: targetCell.empId,
+                date: targetCell.date,
+                // Các trường bổ sung cho khớp logic hiển thị
+                assignmentDate: targetCell.date
+            };
+
+            // Ghi đè vào ô đó
+            newShifts[key] = [newDisplayShift]; 
+            return newShifts;
+        });
+
+        // Đóng modal
+        setModalState(p => ({...p, editVisible: false}));
+
+        // Tải lại dữ liệu thật để đồng bộ
+        setTimeout(() => { fetchAssignments(); }, 500);
+        
+      } catch (error) {
+          console.error("❌ Lỗi API:", error);
+          const msg = error.response?.data?.message || "Lỗi khi lưu. Dữ liệu không hợp lệ.";
+          alert(msg);
+      }
   }
 
-  const handleDeleteShift = () => {
+  // --- XÓA PHÂN CA ---
+  const handleDeleteShift = async () => {
       const { targetCell } = modalState;
       if (!targetCell) return;
-      const key = `${targetCell.empId}_${targetCell.date}`;
       
-      // Xóa key khỏi object shifts (hoặc set thành mảng rỗng)
-      setShifts(prev => {
-          const next = { ...prev };
-          delete next[key];
-          return next;
-      });
+      try {
+          const shiftsToDelete = targetCell.shifts;
+          for (const s of shiftsToDelete) {
+              if (s.id) { 
+                  await shiftscheduleApi.deleteAssignment(s.id);
+              }
+          }
+          await fetchAssignments();
+      } catch (error) {
+          console.error(error);
+          alert("Lỗi khi xóa phân ca!");
+      }
   }
 
   const handleExportExcel = () => {
+    // Logic export excel giữ nguyên
     const headerRow = ['Mã NV', 'Tên NV', 'Đơn vị', 'Vị trí', ...weekDays.map(d => `${d.day} (${d.date})`)];
     const csvRows = [headerRow.join(',')];
     displayedEmployees.forEach(emp => {
@@ -639,7 +707,7 @@ const ShiftAssignmentSummary = () => {
             const hasShift = cellShifts.length > 0;
             return (
                 <div key={`${emp.id}_${day.date}`} className={`grid-cell shift-cell ${day.isToday ? 'is-today-col' : ''}`}>
-                    {/* Nút Action hiện khi Hover */}
+                    {/* Action Hover */}
                     <div className="cell-hover-actions">
                         <CTooltip content={hasShift ? "Sửa phân ca" : "Thêm phân ca"}>
                             <button className="action-btn-mini edit" onClick={() => handleCellClick('edit', emp.id, day.fullDate, cellShifts)}>
@@ -655,9 +723,8 @@ const ShiftAssignmentSummary = () => {
                         )}
                     </div>
 
-                    {/* Hiển thị ca làm việc */}
-                    {cellShifts.map((shift) => (
-                        <div key={shift.id} className="shift-item">
+                    {cellShifts.map((shift, idx) => (
+                        <div key={idx} className="shift-item">
                             <div className="shift-tag">
                                 <span className="shift-dot"></span>{shift.shiftCode}
                             </div>
@@ -676,14 +743,14 @@ const ShiftAssignmentSummary = () => {
       <div className="page-container">
         <div className="summary-header">
           <h2 className="summary-title">Bảng phân ca tổng hợp</h2>
+          {/* ĐÃ CHỈNH SỬA TẠI ĐÂY: XÓA NÚT "ĐƠN VỊ" TRONG BỘ 3 NÚT */}
           <div className="summary-header-tabs">
             <button className="tab-button active">Nhân viên</button>
-            <button className="tab-button" onClick={() => navigate('/timesheet/shiftassignmentSummary/unit')}>Đơn vị</button>
             <button className="tab-button" onClick={() => navigate('/timesheet/shiftassignmentSummary/shift')}>Ca làm việc</button>
           </div>
           <div className="summary-header-actions">
             <CButton color="secondary" variant="outline" onClick={handleJumpToToday}>Hôm nay</CButton>
-            <CButton className="btn-orange" onClick={() => setShowBulkModal(true)}>Phân ca hàng loạt</CButton>
+            {/* <CButton className="btn-orange" onClick={() => alert("Chức năng này đang được bảo trì, vui lòng dùng nút sửa trong bảng!")}>Phân ca hàng loạt</CButton> */}
             <CButton color="secondary" variant="outline" className="ms-auto"><CIcon icon={cilOptions} /></CButton>
           </div>
         </div>
@@ -710,10 +777,7 @@ const ShiftAssignmentSummary = () => {
               <CButton color="secondary" variant="ghost" onClick={handleNextMonth}><CIcon icon={cilChevronRight} /></CButton>
               <span className="date-range-icon" onClick={() => setShowDateRangeModal(true)}><CIcon icon={cilCalendar} /></span>
             </div>
-            <CDropdown>
-              <CDropdownToggle color="secondary" variant="outline">Tất cả đơn vị</CDropdownToggle>
-              <CDropdownMenu><CDropdownItem>HRS</CDropdownItem><CDropdownItem>Nhà máy</CDropdownItem></CDropdownMenu>
-            </CDropdown>
+            
             <div title="Xuất Excel"><CButton color="secondary" variant="outline" onClick={handleExportExcel}>Xuất Excel</CButton></div>
             <div style={{ position: 'relative' }}>
                 <CButton color="secondary" variant="outline" onClick={() => setShowSettings(!showSettings)}><CIcon icon={cilSettings} /></CButton>
@@ -734,17 +798,16 @@ const ShiftAssignmentSummary = () => {
         </div>
       </div>
 
-      <BulkAssignmentModal visible={showBulkModal} onClose={() => setShowBulkModal(false)} availableShifts={MOCK_AVAILABLE_SHIFTS} employees={MOCK_EMPLOYEES} orgUnits={MOCK_ORG_UNITS} />
       <DateRangeModal visible={showDateRangeModal} onClose={() => setShowDateRangeModal(false)} initialStart={startDate} initialEnd={endDate} onApply={handleDateRangeApply} />
       
-      {/* MODAL SỬA CA */}
+      {/* MODAL SỬA CA (Sử dụng dữ liệu ca từ database) */}
       <EditShiftModal 
         visible={modalState.editVisible} 
         onClose={() => setModalState(p => ({...p, editVisible: false}))} 
         onSave={handleSaveShift}
         targetCell={modalState.targetCell}
-        availableShifts={MOCK_AVAILABLE_SHIFTS}
-        employees={MOCK_EMPLOYEES}
+        availableShifts={availableShifts} // Danh sách ca từ database
+        employees={employees}
       />
 
       {/* MODAL XÓA CA */}
@@ -753,7 +816,7 @@ const ShiftAssignmentSummary = () => {
         onClose={() => setModalState(p => ({...p, deleteVisible: false}))} 
         onConfirm={handleDeleteShift}
         targetCell={modalState.targetCell}
-        employees={MOCK_EMPLOYEES}
+        employees={employees}
       />
 
     </React.Fragment>

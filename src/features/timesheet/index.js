@@ -24,7 +24,6 @@ import EmployeeListPage from './pages/setting/employeeList'
 import RawTimesheetPage from './pages/timeKeeping/dataTimesheet'
 import DetailedTimesheetPage from './pages/timeKeeping/detailedTimesheet'
 import SummaryTimesheet from './pages/timeKeeping/summaryTimesheet'
-import ShiftAssignmentAdd from './pages/workShift/shiftassdetailAdd'
 import ShiftAssignmentDetail from './pages/workShift/shiftassignmentDetail'
 import ShiftAssignmentSummary from './pages/workShift/shiftassignmentSummary'
 import ShiftAssignmentByUnit from './pages/workShift/shiftassignmentSummary1'
@@ -52,8 +51,8 @@ const TimesheetModule = () => {
           <Route index element={<OverviewPage />} />
           <Route path="shiftscheduleShow" element={<ShiftScheduleShow />} />
           <Route path="shiftscheduleShow/add" element={<WorkShiftAddNew />} />
+          <Route path="shiftscheduleShow/update/:id" element={<WorkShiftAddNew/>} />
           <Route path="ShiftAssignmentDetail" element={<ShiftAssignmentDetail />} />
-          <Route path="ShiftAssignmentDetail/add" element={<ShiftAssignmentAdd />} />
           <Route path="shiftassignmentSummary" element={<ShiftAssignmentSummary />} />
           <Route path="shiftassignmentSummary/unit" element={<ShiftAssignmentByUnit />} />
           <Route path="shiftassignmentSummary/shift" element={<ShiftAssignmentByShift />} />
@@ -68,9 +67,11 @@ const TimesheetModule = () => {
 
           <Route path="leaveRequest" element={<LeaveRequestPage />} />
           <Route path="leaveRequest/add" element={<LeaveRequestAdd />} />
+          <Route path="leaveRequest/edit/:id" element={<LeaveRequestAdd />} />
 
           <Route path="overtimeRequest" element={<OvertimeRequestPage />} />
           <Route path="overtimeRequest/add" element={<OvertimeRequestAdd />} />
+          <Route path="/overtimeRequest/edit/:id" element={<OvertimeRequestAdd />} />
 
           <Route path="shiftSwap" element={<ShiftSwapRequestPage />} />
           <Route path="shiftSwap/add" element={<ShiftSwapRequestAdd />} />

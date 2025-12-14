@@ -40,15 +40,18 @@ import {
   cilSearch,
   cilSettings,
   cilTrash,
-  cilX
+  cilX,
+  cilWarning
 } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
+
 // ==========================
 // FORMAT + AUTO TẠO TÊN BẢNG
 // ==========================
 const formatDateVN = (date) => {
   if (!date) return ''
   const d = new Date(date)
+  if (isNaN(d.getTime())) return '' // Check valid date
   const day = String(d.getDate()).padStart(2, '0')
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const year = d.getFullYear()
@@ -56,11 +59,23 @@ const formatDateVN = (date) => {
 }
 
 const formatInputDate = (date) => {
+  if (!date) return ''
   const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
   const day = String(d.getDate()).padStart(2, '0')
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const year = d.getFullYear()
   return `${year}-${month}-${day}`
+}
+
+// Hàm hỗ trợ chuyển đổi từ "dd/mm/yyyy" sang "yyyy-mm-dd" cho input type="date"
+const convertDateToISO = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return '';
 }
 
 const buildTimesheetName = (start, end) => {
@@ -83,7 +98,7 @@ const DEFAULT_COLUMNS = [
 ];
 
 // =====================================================================
-// 1. CSS TÙY CHỈNH (ĐÃ LÀM ĐẸP NÚT & HIỆU ỨNG HOVER)
+// 1. CSS TÙY CHỈNH
 // =====================================================================
 const DetailedTimesheetStyles = () => (
   <style>
@@ -96,7 +111,6 @@ const DetailedTimesheetStyles = () => (
       flex-direction: column;
       overflow: hidden;
     }
-
     /* === Header === */
     .page-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .page-title { font-size: 1.75rem; font-weight: 500; }
@@ -107,7 +121,6 @@ const DetailedTimesheetStyles = () => (
     .filter-left { flex-grow: 1; max-width: 350px; }
     .filter-right { display: flex; gap: 8px; align-items: center; position: relative; }
     
-
     /* === Table Wrapper === */
     .card-full-height {
         flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;
@@ -134,27 +147,22 @@ const DetailedTimesheetStyles = () => (
     tbody tr:hover .sticky-col-first,
     tbody tr:hover .sticky-col-last,
     tbody tr:hover td { 
-        background-color: #f8f9fa; /* Màu nền khi hover vào dòng */
+        background-color: #f8f9fa;
     }
 
-    /* === (MỚI) ACTION BUTTONS CSS === */
+    /* === ACTION BUTTONS CSS === */
     .row-actions {
         display: flex; gap: 8px; justify-content: center;
-        /* Mặc định ẩn */
         opacity: 0;
         visibility: hidden;
         transform: translateY(5px);
         transition: all 0.2s ease-in-out;
     }
-
-    /* Khi hover vào dòng TR thì hiện row-actions lên */
     tbody tr:hover .row-actions {
         opacity: 1;
         visibility: visible;
         transform: translateY(0);
     }
-
-    /* Style cho nút thao tác đẹp hơn (Tròn, Clean) */
     .btn-action {
         width: 32px; height: 32px;
         border-radius: 50%;
@@ -169,8 +177,8 @@ const DetailedTimesheetStyles = () => (
         background-color: #e2e8f0;
         transform: scale(1.1);
     }
-    .btn-action.edit:hover { color: #f59e0b; background-color: #fef3c7; } /* Hover Sửa ra màu cam nhạt */
-    .btn-action.delete:hover { color: #ef4444; background-color: #fee2e2; } /* Hover Xóa ra màu đỏ nhạt */
+    .btn-action.edit:hover { color: #f59e0b; background-color: #fef3c7; }
+    .btn-action.delete:hover { color: #ef4444; background-color: #fee2e2; }
 
     /* === Status Cell === */
     .status-cell { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #8a93a2; }
@@ -301,7 +309,7 @@ const FilterBar = ({ filters, onFilterChange, onReload, columns, onUpdateColumns
 }
 
 // =====================================================================
-// 5. COMPONENT TABLE (ĐÃ CẬP NHẬT NÚT ACTIONS)
+// 5. COMPONENT TABLE
 // =====================================================================
 const PageTable = ({ data, columns, onEdit, onDelete }) => {
   const safeData = Array.isArray(data) ? data : [];
@@ -403,7 +411,9 @@ const DetailedTimesheetPage = () => {
   const [filters, setFilters] = useState({ search: '', unit: 'all' })
   const isInitialMount = useRef(true)
 
+  // -- STATES CHO MODAL THÊM/SỬA --
   const [addModalVisible, setAddModalVisible] = useState(false)
+  const [editingId, setEditingId] = useState(null) // null nếu là thêm mới, có ID nếu là sửa
   const [newTimesheetForm, setNewTimesheetForm] = useState({
     unit: 'SinhvienDungThu',
     position: 'all',
@@ -416,6 +426,9 @@ const DetailedTimesheetPage = () => {
     standardWork: 'fixed'
   })
 
+  // -- STATES CHO MODAL XÓA --
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState(null)
 
   const fetchData = useCallback(async (currentFilters) => {
     setIsFiltering(true)
@@ -439,7 +452,10 @@ const DetailedTimesheetPage = () => {
     if (isInitialMount.current) { isInitialMount.current = false } else { fetchData(filters) }
   }, [filters, fetchData])
 
+  // Logic tự động set ngày tháng khi chọn dropdown "Thời gian"
   useEffect(() => {
+    if (newTimesheetForm.timePeriod === 'custom') return; // Không tự động tính nếu là tùy chỉnh (dùng cho edit)
+
     let start, end
     const today = new Date()
 
@@ -453,7 +469,7 @@ const DetailedTimesheetPage = () => {
       end = new Date(today.getFullYear(), today.getMonth(), 0)
     }
 
-    if (newTimesheetForm.timePeriod !== 'custom' && start && end) {
+    if (start && end) {
       const s = formatInputDate(start)
       const e = formatInputDate(end)
 
@@ -461,10 +477,13 @@ const DetailedTimesheetPage = () => {
         ...prev,
         startDate: s,
         endDate: e,
+        // Chỉ auto tạo tên nếu không phải đang sửa (hoặc tùy logic)
         name: buildTimesheetName(s, e)
       }))
     }
   }, [newTimesheetForm.timePeriod])
+
+  // Logic reset standardWork khi đổi type
   useEffect(() => {
     if (newTimesheetForm.type === 'Theo gio') {
       setNewTimesheetForm(prev => ({
@@ -474,21 +493,15 @@ const DetailedTimesheetPage = () => {
     }
   }, [newTimesheetForm.type])
 
+  // Logic tự động cập nhật tên khi đổi ngày start/end (chỉ khi có cả 2)
   useEffect(() => {
     if (!newTimesheetForm.startDate || !newTimesheetForm.endDate) return
-
+    // Tự động cập nhật tên theo ngày mới
     setNewTimesheetForm(prev => ({
       ...prev,
-      name: buildTimesheetName(
-        prev.startDate,
-        prev.endDate
-      )
+      name: buildTimesheetName(prev.startDate, prev.endDate)
     }))
-
-  }, [
-    newTimesheetForm.startDate,
-    newTimesheetForm.endDate
-  ])
+  }, [newTimesheetForm.startDate, newTimesheetForm.endDate])
 
 
   const handleNewFormChange = (e) => {
@@ -496,32 +509,111 @@ const DetailedTimesheetPage = () => {
     setNewTimesheetForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
-  const handleAddNew = () => setAddModalVisible(true)
-  const handleSaveNewTimesheet = () => { console.log('Lưu:', newTimesheetForm); setAddModalVisible(false) }
-  // const handleSaveNewTimesheet = () => {
-  //   const newItem = {
-  //     id: Date.now(),
-  //     timeRange: `${formatDateVN(newTimesheetForm.startDate)} - ${formatDateVN(newTimesheetForm.endDate)}`,
-  //     name: newTimesheetForm.name,
-  //     type: newTimesheetForm.type,
-  //     unit: newTimesheetForm.unit,
-  //     position: newTimesheetForm.position,
-  //     status: 'Chưa khóa'
-  //   }
+  // --- XỬ LÝ CLICK NÚT THÊM MỚI ---
+  const handleAddNew = () => {
+    setEditingId(null) // Reset chế độ edit
+    setNewTimesheetForm({
+        unit: 'SinhvienDungThu',
+        position: 'all',
+        includeSub: false,
+        name: '',
+        timePeriod: 'this_month', // Reset về mặc định
+        startDate: '',
+        endDate: '',
+        type: 'Theo ca',
+        standardWork: 'fixed'
+    })
+    setAddModalVisible(true)
+  }
 
-  //   setData(prev => [newItem, ...prev])
+  // --- XỬ LÝ CLICK NÚT SỬA (CIL PENCIL) ---
+  const handleEditItem = (item) => {
+    setEditingId(item.id); // Đánh dấu đang sửa ID này
+    
+    // Tách chuỗi thời gian "01/11/2025 - 30/11/2025"
+    let startIso = '';
+    let endIso = '';
+    if(item.timeRange && item.timeRange.includes(' - ')) {
+        const [s, e] = item.timeRange.split(' - ');
+        startIso = convertDateToISO(s.trim());
+        endIso = convertDateToISO(e.trim());
+    }
 
-  //   setAddModalVisible(false)
-  // }
-  const handleEditItem = (item) => alert('Sửa: ' + item.name)
-  const handleDeleteItem = (item) => { if (window.confirm(`Xóa "${item.name}"?`)) alert('Đã xóa') }
+    // Đổ dữ liệu vào Form
+    setNewTimesheetForm({
+        unit: item.unit, 
+        // Logic mapping position từ text sang value (đơn giản hóa cho ví dụ)
+        position: 'all', 
+        includeSub: false,
+        name: item.name,
+        timePeriod: 'custom', // Chuyển sang custom để không bị useEffect ghi đè ngày
+        startDate: startIso,
+        endDate: endIso,
+        type: item.type,
+        standardWork: 'fixed'
+    });
+    
+    setAddModalVisible(true);
+  }
+
+  // --- XỬ LÝ LƯU (THÊM HOẶC SỬA) ---
+  const handleSaveTimesheet = () => {
+    // Format lại ngày để hiển thị ra bảng
+    const displayDateRange = `${formatDateVN(newTimesheetForm.startDate)} - ${formatDateVN(newTimesheetForm.endDate)}`;
+
+    if (editingId) {
+        // === LOGIC CẬP NHẬT (EDIT) ===
+        setData(prevData => prevData.map(item => {
+            if (item.id === editingId) {
+                return {
+                    ...item,
+                    name: newTimesheetForm.name,
+                    unit: newTimesheetForm.unit,
+                    type: newTimesheetForm.type,
+                    timeRange: displayDateRange,
+                    // Cập nhật các trường khác nếu cần mapping chính xác hơn
+                };
+            }
+            return item;
+        }));
+    } else {
+        // === LOGIC THÊM MỚI (ADD) ===
+        const newItem = {
+          id: Date.now(),
+          timeRange: displayDateRange,
+          name: newTimesheetForm.name,
+          type: newTimesheetForm.type,
+          unit: newTimesheetForm.unit,
+          position: newTimesheetForm.position === 'all' ? 'Tất cả vị trí' : 'Vị trí cụ thể', // Mapping tạm
+          status: 'Chưa khóa'
+        }
+        setData(prev => [newItem, ...prev])
+    }
+    
+    setAddModalVisible(false)
+  }
+
+  // --- XỬ LÝ CLICK NÚT XÓA (CIL TRASH) ---
+  const handleDeleteItem = (item) => {
+    setItemToDelete(item);
+    setDeleteModalVisible(true);
+  }
+
+  // --- XÁC NHẬN XÓA ---
+  const confirmDelete = () => {
+    if (itemToDelete) {
+        setData(prev => prev.filter(i => i.id !== itemToDelete.id));
+    }
+    setDeleteModalVisible(false);
+    setItemToDelete(null);
+  }
+
   const handleReload = () => {
     const defaultFilters = { search: '', unit: 'all' }
     setFilters(defaultFilters)
     setColumns(DEFAULT_COLUMNS)
     fetchData(defaultFilters)
   }
-
 
   if (loading && !isFiltering) return <div className="d-flex justify-content-center align-items-center vh-100"><CSpinner color="primary" /></div>
 
@@ -557,16 +649,18 @@ const DetailedTimesheetPage = () => {
         </CCard>
       </div>
 
-      {/* Modal giữ nguyên như cũ */}
+      {/* --- MODAL THÊM / SỬA --- */}
       <CModal visible={addModalVisible} onClose={() => setAddModalVisible(false)} className="add-timesheet-modal" size="lg">
-        <CModalHeader onClose={() => setAddModalVisible(false)}><CModalTitle>Thêm bảng chấm công chi tiết</CModalTitle></CModalHeader>
+        <CModalHeader onClose={() => setAddModalVisible(false)}>
+            <CModalTitle>{editingId ? 'Cập nhật bảng chấm công' : 'Thêm bảng chấm công chi tiết'}</CModalTitle>
+        </CModalHeader>
         <CModalBody>
           <CForm>
             <CRow className="mb-3">
               <CFormLabel className="col-sm-4 col-form-label required">Đơn vị áp dụng</CFormLabel>
               <CCol sm={8}>
                 <CFormSelect name="unit" value={newTimesheetForm.unit} onChange={handleNewFormChange}>
-                  <option value="SinhvienDungThu">SinhvienDungThu</option><option value="HRS">HRS</option><option value="NhaMay">Nhà máy</option>
+                  <option value="SinhvienDungThu">SinhvienDungThu</option><option value="HRS">HRS</option><option value="Nhà máy">Nhà máy</option><option value="Vận hành">Vận hành</option>
                 </CFormSelect>
               </CCol>
             </CRow>
@@ -660,7 +754,27 @@ const DetailedTimesheetPage = () => {
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" variant="outline" onClick={() => setAddModalVisible(false)}>Hủy</CButton>
-          <CButton className="btn-orange" onClick={handleSaveNewTimesheet}>Lưu</CButton>
+          <CButton className="btn-orange" onClick={handleSaveTimesheet}>Lưu</CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* --- MODAL XÁC NHẬN XÓA --- */}
+      <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)} alignment="center">
+        <CModalHeader onClose={() => setDeleteModalVisible(false)}>
+            <CModalTitle className="text-danger">
+                 Xác nhận xóa
+            </CModalTitle>
+        </CModalHeader>
+        <CModalBody className="text-center py-4">
+            <CIcon icon={cilWarning} size="3xl" className="text-warning mb-3"/>
+            <h5>Bạn có chắc chắn muốn xóa bản ghi này?</h5>
+            <p className="text-muted">
+                {itemToDelete?.name}
+            </p>
+        </CModalBody>
+        <CModalFooter className="justify-content-center border-top-0 pb-4">
+            <CButton color="secondary" onClick={() => setDeleteModalVisible(false)}>Không</CButton>
+            <CButton color="danger" className="text-white" onClick={confirmDelete}>Đồng ý xóa</CButton>
         </CModalFooter>
       </CModal>
     </>
