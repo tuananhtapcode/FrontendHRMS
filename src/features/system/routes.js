@@ -1,9 +1,9 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 
-const SystemCompanyInfo = React.lazy(() => import('./pages/CompanyInfo'))
-const SystemCategoryMember = React.lazy(() => import('./pages/CategoryMember'))
-
+const CompanyInfo = React.lazy(() => import('./pages/CompanyInfo'))
+const CategoryMember = React.lazy(() => import('./pages/CategoryMember'))
+const Logs = React.lazy(() => import('./pages/Logs'))
 const routes = [
   {
     path: '/system',
@@ -12,13 +12,18 @@ const routes = [
   },
   {
     path: '/system/company-info/general-info',
-    name: 'SystemCompanyInfo',
-    element: SystemCompanyInfo,
+    name: 'CompanyInfo',
+    element: CompanyInfo,
   },
   {
     path: '/system/category/member',
-    name: 'SystemCategoryMember',
-    element: SystemCategoryMember,
+    name: 'CategoryMember',
+    element: CategoryMember,
+  },
+  {
+    path: '/system/logs',
+    name: 'Logs',
+    element: Logs,
   },
 ]
 

@@ -64,7 +64,7 @@ const ReportList = () => {
 
   return (
     <div className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      <h4 className="fw-bold mb-4">Danh sách báo cáo</h4>
+      <h4 className="fw-bold mb-4">Danh sách báo cáo (Đang phát triển)</h4>
 
       <CRow xs={{ cols: 1, gutter: 3 }} md={{ cols: 2 }} lg={{ cols: 3 }}>
         {reports.map((report, index) => (

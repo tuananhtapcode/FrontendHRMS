@@ -26,9 +26,14 @@ const Login = () => {
     try {
       const data = await login(username, password)
       localStorage.setItem('access_token', data.accessToken)
+      localStorage.setItem('Role', data.role.code)
       navigate('/system')
     } catch (err) {
-      console.log(err)
+      if (err.code == 'ERR_BAD_RESPONSE') {
+        alert('Tài khoản hoặc mật khẩu sai!')
+      } else {
+        alert('Có lỗi khi kết nối đến server, vui lòng thử lại sau!')
+      }
     }
   }
 

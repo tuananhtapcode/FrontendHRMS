@@ -117,18 +117,6 @@ const ProfileCreate = () => {
           <CCol className="position-relative">
             <GeneralInfoForm formData={formData} handleChange={handleChange} />
           </CCol>
-          {/* <CCol>
-            {formData.isEmployee && (
-              <CContainer style={{ marginBottom: 16 }}>
-                <JobInfoForm formData={formData} handleChange={handleChange} />
-              </CContainer>
-            )}
-            {formData.isUser && (
-              <CContainer>
-                <AccountInfoForm formData={formData} handleChange={handleChange} />
-              </CContainer>
-            )}
-          </CCol> */}
         </CRow>
       </CForm>
     </>

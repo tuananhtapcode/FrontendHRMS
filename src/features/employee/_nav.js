@@ -54,11 +54,11 @@ const _nav = [
         name: 'Đăng ký làm thêm',
         to: '/employee/timesheet/overtime-request',
       },
-      {
-        component: CNavItem,
-        name: 'Đề nghị đổi ca',
-        to: '/employee/timesheet/change-shift',
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Đề nghị đổi ca',
+      //   to: '/employee/timesheet/change-shift',
+      // },
     ],
   },
 ]

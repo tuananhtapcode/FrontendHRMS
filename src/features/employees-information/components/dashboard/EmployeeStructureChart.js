@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { getStyle } from '@coreui/utils'
 import { CCard, CCardBody, CCardSubtitle, CCardTitle } from '@coreui/react'
 
-const EmployeeStructureChart = ({ title, className }) => {
+const EmployeeStructureChart = ({ title, data, className }) => {
   const chartRef = useRef(null)
 
   useEffect(() => {
@@ -23,16 +23,6 @@ const EmployeeStructureChart = ({ title, className }) => {
       document.documentElement.removeEventListener('ColorSchemeChange', handleColorSchemeChange)
     }
   }, [])
-
-  const data = {
-    labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
-    datasets: [
-      {
-        backgroundColor: ['#41B883', '#E46651', '#00D8FF', '#DD1B16'],
-        data: [40, 20, 80, 10],
-      },
-    ],
-  }
 
   const options = {
     plugins: {

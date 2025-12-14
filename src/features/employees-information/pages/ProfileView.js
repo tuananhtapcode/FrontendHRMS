@@ -1,150 +1,291 @@
-import { useState } from 'react'
-import { CRow, CCol, CButton, CFormInput, CCard, CCardBody } from '@coreui/react'
-import { cilPlus } from '@coreui/icons'
-import { MyDropdown } from '../components/common/MyComponents'
+import { useEffect, useRef, useState } from 'react'
+import {
+  CRow,
+  CCol,
+  CButton,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
+  CModalTitle,
+  CForm,
+  CTooltip,
+  CFormInput,
+  CFormSelect,
+} from '@coreui/react'
+import { cilCloudDownload, cilPlus } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { SearchableTable } from '../../../components/zReuse/zComponents'
 import { employeeColumns } from './components/tableColumns'
-
-const data = [
-  {
-    id: 'NV001',
-    fullName: 'Nguyễn Văn A',
-    gender: 'Nam',
-    dateOfBirth: '1995-03-12',
-    phoneNumber: '0905123456',
-    companyEmail: 'nguyenvana@company.com',
-    jobPosition: 'Lập trình viên Frontend',
-    workUnit: 'Phòng Công nghệ thông tin',
-    trialDate: '2022-01-10',
-    officialDate: '2022-04-10',
-    contractType: 'Hợp đồng 1 năm',
-    laborStatus: 'Chính thức',
-    seniority: '2 năm 6 tháng',
-    insuranceParticipation: 'Có',
-  },
-  {
-    id: 'NV002',
-    fullName: 'Trần Thị B',
-    gender: 'Nữ',
-    dateOfBirth: '1998-08-25',
-    phoneNumber: '0987123456',
-    companyEmail: 'tranthib@company.com',
-    jobPosition: 'Nhân sự',
-    workUnit: 'Phòng Hành chính - Nhân sự',
-    trialDate: '2023-02-01',
-    officialDate: '2023-05-01',
-    contractType: 'Hợp đồng không thời hạn',
-    laborStatus: 'Chính thức',
-    seniority: '1 năm 4 tháng',
-    insuranceParticipation: 'Có',
-  },
-  {
-    id: 'NV003',
-    fullName: 'Lê Hoàng C',
-    gender: 'Nam',
-    dateOfBirth: '1997-11-05',
-    phoneNumber: '0912123123',
-    companyEmail: 'lehoangc@company.com',
-    jobPosition: 'Kế toán viên',
-    workUnit: 'Phòng Kế toán',
-    trialDate: '2024-06-15',
-    officialDate: '',
-    contractType: 'Thử việc',
-    laborStatus: 'Thử việc',
-    seniority: '3 tháng',
-    insuranceParticipation: 'Chưa',
-  },
-  {
-    id: 'NV004',
-    fullName: 'Phạm Minh D',
-    gender: 'Nữ',
-    dateOfBirth: '1992-05-18',
-    phoneNumber: '0935456789',
-    companyEmail: 'phamminhd@company.com',
-    jobPosition: 'Trưởng phòng Marketing',
-    workUnit: 'Phòng Marketing',
-    trialDate: '2020-03-01',
-    officialDate: '2020-06-01',
-    contractType: 'Hợp đồng dài hạn',
-    laborStatus: 'Nghỉ thai sản',
-    seniority: '5 năm',
-    insuranceParticipation: 'Có',
-  },
-  {
-    id: 'NV005',
-    fullName: 'Đỗ Quốc E',
-    gender: 'Nam',
-    dateOfBirth: '1990-09-10',
-    phoneNumber: '0977543210',
-    companyEmail: 'doquoce@company.com',
-    jobPosition: 'Bảo vệ',
-    workUnit: 'Ban An ninh',
-    trialDate: '2019-01-01',
-    officialDate: '2019-04-01',
-    contractType: 'Hợp đồng 3 năm',
-    laborStatus: 'Chính thức',
-    seniority: '6 năm',
-    insuranceParticipation: 'Có',
-  },
-]
-
-const dropdownItems = [
-  'Tất cả nhân viên',
-  'Đang làm việc',
-  'Đã nghỉ việc',
-  'Thử việc',
-  'Tiếp nhận tuần này',
-  'Chưa có hợp đồng',
-]
+import {
+  createEmployees,
+  exportEmployees,
+  getActiveJobPositions,
+  getDepartments,
+  getEmployees,
+} from '../api/api'
 
 const ProfileView = () => {
-  const [selectOption, setSelectOption] = useState(dropdownItems[0])
-  const [searchText, setSearchText] = useState('')
+  const formRef = useRef()
 
-  // Filter dữ liệu theo dropdown + search
-  const filteredData = data.filter(
-    (item) =>
-      (selectOption === 'Tất cả nhân viên' || item.laborStatus === selectOption) &&
-      (item.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchText.toLowerCase())),
-  )
+  const [isUpdate, setIsUpdate] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [jobPositions, setJobPositions] = useState([])
+  const [departments, setDeparments] = useState([])
+  const [formData, setFormData] = useState({
+    employeeCode: '',
+    lastName: '',
+    firstName: '',
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    departmentId: 1,
+    jobPositionId: 1,
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getDepartments(0, 9999)
+        const cleaned = res.data.map(({ departmentId, name }) => ({
+          departmentId,
+          name,
+        }))
+        setDeparments(cleaned)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    fetchData()
+  }, [])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getActiveJobPositions(0, 9999)
+        const cleaned = res.data.map(({ id, name }) => ({
+          id,
+          name,
+        }))
+        setJobPositions(cleaned)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    handleChange('fullName', formData.lastName + ' ' + formData.firstName)
+  }, [formData.firstName, formData.lastName])
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => {
+      if (prev[field] === value) return prev
+      return { ...prev, [field]: value }
+    })
+  }
+
+  const handleAdd = () => {
+    setIsUpdate(false)
+    setVisible(true)
+    setFormData({
+      employeeCode: '',
+      lastName: '',
+      firstName: '',
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      departmentId: departments[0].departmentId,
+      jobPositionId: jobPositions[0].id,
+    })
+  }
+
+  const handleExport = async () => {
+    try {
+      await exportEmployees()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const handleCancel = () => {
+    setVisible(false)
+  }
+
+  const handleSubmit = async () => {
+    try {
+      await createEmployees(
+        formData.employeeCode,
+        formData.fullName,
+        formData.email,
+        formData.phoneNumber,
+        formData.departmentId,
+        formData.jobPositionId,
+      )
+    } catch (error) {
+      const message = error.response.data
+      alert(message)
+      console.error(error)
+    }
+  }
 
   return (
-    <CCard className="p-3 shadow-sm">
-      <CCardBody>
-        <CRow className="align-items-center mb-3" style={{ gap: '12px' }}>
-          {/* Dropdown + Search */}
-          <CCol md={4} sm={12}>
-            <MyDropdown
-              title="Trạng thái nhân viên"
-              defaultValue={selectOption}
-              items={dropdownItems}
-              handleClick={setSelectOption}
-            />
-          </CCol>
-          <CCol md={4} sm={12}>
-            <CFormInput
-              placeholder="Tìm theo tên hoặc mã NV..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          </CCol>
-          <CCol xs="auto">
-            <CButton
-              color="info"
-              className="text-white fw-bold d-flex align-items-center gap-1"
-              href="/#/employees-information/profile/create"
-            >
-              <CIcon icon={cilPlus} /> Thêm
+    <>
+      <CRow className="mb-3 align-items-center">
+        <CCol md={4} className="fw-bold fs-4">
+          Thông tin nhân sự
+        </CCol>
+        <CCol className="gap-2 d-flex justify-content-end align-items-center">
+          <CTooltip content="Xuất file Excel" placement="bottom">
+            <CButton color="secondary" onClick={() => handleExport()}>
+              <CIcon icon={cilCloudDownload} />
             </CButton>
-          </CCol>
-        </CRow>
+          </CTooltip>
+          <CButton color="info" onClick={() => handleAdd()}>
+            <CIcon icon={cilPlus} />
+            Thêm
+          </CButton>
+        </CCol>
+      </CRow>
+      <SearchableTable columns={employeeColumns} getAPI={getEmployees} limit={10} />
 
-        {/* Table */}
-        <SearchableTable columns={employeeColumns} data={filteredData} />
-      </CCardBody>
-    </CCard>
+      <CModal alignment="center" backdrop="static" visible={visible} onClose={handleCancel}>
+        <CModalHeader>
+          <CModalTitle>Thêm vị trí công việc</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CForm
+            ref={formRef}
+            noValidate
+            className="needs-validation"
+            validated={true}
+            style={{ backgroundColor: 'white', padding: 16, marginBottom: 16, marginTop: 16 }}
+          >
+            <CRow>
+              <CCol className="position-relative">
+                <h5 className="fw-bold">THÔNG TIN CHUNG</h5>
+                <div className="row g-3">
+                  <CCol md={12}>
+                    <CFormInput
+                      id="inputEmployeeId"
+                      label="Mã nhân viên"
+                      placeholder="Nhập mã nhân viên"
+                      value={formData.employeeCode}
+                      onChange={(e) => handleChange('employeeCode', e.target.value)}
+                      required
+                    />
+                  </CCol>
+
+                  <CCol md={6}>
+                    <CFormInput
+                      id="inputLastName"
+                      label={
+                        <>
+                          Họ và đệm <span style={{ color: 'red' }}>*</span>
+                        </>
+                      }
+                      placeholder="Nhập họ và đệm"
+                      value={formData.lastName}
+                      onChange={(e) => handleChange('lastName', e.target.value)}
+                      required
+                    />
+                  </CCol>
+
+                  <CCol md={6}>
+                    <CFormInput
+                      id="inputFirstName"
+                      label={
+                        <>
+                          Tên <span style={{ color: 'red' }}>*</span>
+                        </>
+                      }
+                      placeholder="Nhập tên"
+                      value={formData.firstName}
+                      onChange={(e) => handleChange('firstName', e.target.value)}
+                      required
+                    />
+                  </CCol>
+
+                  <CCol md={12}>
+                    <CFormInput
+                      value={formData.fullName}
+                      id="inputFullName"
+                      label="Họ và tên"
+                      disabled
+                    />
+                  </CCol>
+
+                  <CCol md={12}>
+                    <CFormInput
+                      id="inputPhoneNumber"
+                      label="Điện thoại di động"
+                      placeholder="Nhập số điện thoại"
+                      value={formData.phoneNumber}
+                      onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                    />
+                  </CCol>
+
+                  <CCol md={12}>
+                    <CFormInput
+                      id="inputPersonalEmail"
+                      label="Email cá nhân"
+                      placeholder="Nhập email"
+                      value={formData.email}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      required
+                      type="email"
+                      pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                      feedbackInvalid="Email không hợp lệ"
+                    />
+                  </CCol>
+
+                  <CCol md={12}>
+                    <CFormSelect label="Chọn nhân viên">
+                      {departments.map((d, i) => (
+                        <option
+                          key={i}
+                          value={d.name}
+                          onClick={() => handleChange('departmentId', d.departmentId)}
+                        >
+                          {d.name}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                  </CCol>
+
+                  <CCol md={12}>
+                    <CFormSelect label="Chọn nhân viên">
+                      {jobPositions.map((j, i) => (
+                        <option
+                          key={i}
+                          value={j.name}
+                          onClick={() => handleChange('jobPositionId', j.id)}
+                        >
+                          {j.name}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                  </CCol>
+                </div>
+              </CCol>
+            </CRow>
+          </CForm>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setVisible(!visible)}>
+            Hủy
+          </CButton>
+          <CButton
+            color="primary"
+            onClick={() => {
+              isUpdate ? handleUpdate() : handleSubmit()
+            }}
+          >
+            {isUpdate ? 'Cập nhật' : 'Thêm'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </>
   )
 }
 

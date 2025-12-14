@@ -2,7 +2,6 @@ import { CButton, CCol, CRow, CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilArrowLeft, cilCloudDownload } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
-import { EmployeeTable } from '../../components/common/MyComponents'
 import { ReportArgument } from './ReportArgument'
 
 const ReportBase = ({ title, ArgChildren, dataTable }) => {
@@ -51,9 +50,7 @@ const ReportBase = ({ title, ArgChildren, dataTable }) => {
         {/* MAIN TABLE */}
         <CCol style={{ width: 1 }}>
           <CCard className="h-100 shadow-sm border-0">
-            <CCardBody>
-              <EmployeeTable data={dataTable} />
-            </CCardBody>
+            <CCardBody>{/* <EmployeeTable data={dataTable} /> */}</CCardBody>
           </CCard>
         </CCol>
       </CRow>

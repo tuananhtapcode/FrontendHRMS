@@ -1,8 +1,21 @@
 import { cilBookmark, cilCalendar, cilCalendarCheck, cilList, cilNotes } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { CButton, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CRow } from '@coreui/react'
+import { useEffect, useState } from 'react'
+import { getMyEmployeeInformation } from '../api/api'
 
 const Overview = () => {
+  const [fullName, setFullName] = useState('')
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await getMyEmployeeInformation()
+      console.log(res)
+      setFullName(res.fullName)
+    }
+    fetchData()
+  }, [setFullName])
+
   return (
     <>
       <h1 className="text-3xl font-bold mb-4">Tổng quan</h1>
@@ -11,7 +24,7 @@ const Overview = () => {
           <CCard className="p-4 shadow-sm rounded-3xl border-0 h-100">
             <CCard className="p-3 mb-4">
               <h2 className="text-2xl font-semibold mb-2">
-                Xin chào, <span className="text-primary">ABC</span>
+                Xin chào, <span className="text-primary">{fullName}</span>
               </h2>
               <small className="text-muted d-block">
                 Chúc bạn một ngày làm việc hiệu quả và tràn đầy năng lượng ☀️

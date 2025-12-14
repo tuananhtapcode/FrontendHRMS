@@ -1,11 +1,60 @@
-import { CButtonGroup, CCard, CCol, CFormCheck, CRow } from '@coreui/react'
+import {
+  CButton,
+  CButtonGroup,
+  CCard,
+  CCol,
+  CFormCheck,
+  CFormInput,
+  CFormTextarea,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CRow,
+} from '@coreui/react'
 import { cil4k } from '@coreui/icons'
-import { EmployeeCard, SearchableTable } from '../../../../components/zReuse/zComponents'
+import {
+  EmployeeCard,
+  requiredLabel,
+  SearchableTable,
+} from '../../../../components/zReuse/zComponents'
 import { attendanceCols } from '../../components/tableColumns'
+import {
+  getMineAttendanceAll,
+  getMineAttendanceApproved,
+  getMineAttendancePending,
+} from '../../api/api'
+import { forwardRef, useState } from 'react'
 
-const First = () => {
-  // const tableStates = ['Hôm nay', 'Hôm qua', 'Tuần này', 'Tuần trước', 'Tháng này', 'Tháng trước']
-  const buttons = ['Tất cả', 'Chưa gửi', 'Chờ duyệt', 'Đã duyệt', 'Bị từ chối']
+const states = [
+  { button: 'Tất cả', getAPI: getMineAttendanceAll },
+  { button: 'Chờ duyệt', getAPI: getMineAttendancePending },
+  { button: 'Đã duyệt', getAPI: getMineAttendanceApproved },
+  // { button: 'Bị từ chối', getAPI: getMineOvertimeRequestRejected },
+]
+
+const First = forwardRef(({ onUpdate }, ref) => {
+  const [currentState, setCurrentState] = useState(0)
+  const [visible, setVisible] = useState(false)
+
+  const [createdDate, setCreatedDate] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [totalDay, setTotalDay] = useState('')
+  const [leaveType, setLeaveType] = useState('')
+  const [reason, setReason] = useState('')
+
+  const handleRowClick = (item) => {
+    setVisible(true)
+    setCreatedDate(item.createdAt)
+    setStartDate(item.startDate)
+    setEndDate(item.endDate)
+    setTotalDay(item.totalDays)
+    setLeaveType(item.leaveType)
+    setReason(item.reason)
+  }
+
   return (
     <>
       <CRow className="mb-4">
@@ -55,23 +104,18 @@ const First = () => {
         <CCol md={2}>
           <CCard>
             <CButtonGroup vertical role="group" className="w-100">
-              {buttons.map((label, index) => {
-                const count = Math.floor(Math.random() * 10) // ví dụ tạm số lượng, thay bằng data thật
+              {states.map((state, index) => {
                 return (
                   <CFormCheck
                     key={index}
                     type="radio"
                     button={{ color: 'primary', variant: 'outline' }}
-                    name="vbtnradio-tab2"
-                    id={`vbtnradio${index}-tab2`}
+                    name="vbtnradio-tab1"
+                    id={`attendance${index}-tab1`}
                     autoComplete="off"
-                    defaultChecked={index === 1}
-                    label={
-                      <div className="d-flex justify-content-between align-items-center w-100 px-2">
-                        <span>{label}</span>
-                        <span className="badge bg-primary">{count}</span>
-                      </div>
-                    }
+                    defaultChecked={index === currentState}
+                    label={state.button}
+                    onClick={() => setCurrentState(index)}
                   />
                 )
               })}
@@ -79,11 +123,48 @@ const First = () => {
           </CCard>
         </CCol>
         <CCol style={{ width: '1px' }}>
-          <SearchableTable columns={attendanceCols} />
+          <SearchableTable
+            ref={ref}
+            columns={attendanceCols}
+            getAPI={states[currentState].getAPI}
+            onRowClick={handleRowClick}
+            onUpdate={onUpdate}
+          />
         </CCol>
       </CRow>
+
+      <CModal size="lg" alignment="center" visible={visible} onClose={() => setVisible(false)}>
+        <CModalHeader>
+          <CModalTitle>Xem đơn nghỉ</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CRow>
+            <CCol>
+              <CFormInput label={requiredLabel('Ngày nộp đơn')} value={createdDate} disabled />
+              <CFormInput label={requiredLabel('Từ ngày')} value={startDate} disabled />
+              <CFormInput label={requiredLabel('Đến ngày')} value={endDate} disabled />
+              <CFormInput label={requiredLabel('Loại nghỉ')} value={leaveType} disabled />
+              <CFormInput label={requiredLabel('Số ngày nghỉ')} value={totalDay} disabled />
+              <CFormInput label={requiredLabel('Lý do nghỉ')} value={reason} disabled />
+            </CCol>
+            <CCol>
+              <CFormTextarea
+                label={requiredLabel('Lý do làm thêm')}
+                rows={4}
+                value={reason}
+                disabled
+              />
+            </CCol>
+          </CRow>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="primary" onClick={() => setVisible(false)}>
+            OK
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </>
   )
-}
+})
 
 export default First

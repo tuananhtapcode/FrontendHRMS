@@ -1,12 +1,4 @@
-import {
-  cilApps,
-  cilBell,
-  cilContrast,
-  cilEnvelopeOpen,
-  cilList,
-  cilMoon,
-  cilSun,
-} from '@coreui/icons'
+import { cilApps, cilContrast, cilMoon, cilSun } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import {
   CContainer,
@@ -17,13 +9,10 @@ import {
   CHeader,
   CHeaderNav,
   CHeaderToggler,
-  CNavItem,
-  CNavLink,
   useColorModes,
 } from '@coreui/react'
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { NavLink } from 'react-router-dom'
 import { AppHeaderDropdown } from './header/index'
 import { AppBreadcrumb } from './index'
 
@@ -50,7 +39,7 @@ const AppHeader = () => {
         >
           <CIcon icon={cilApps} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav className="d-none d-md-flex">
+        {/* <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
             <CNavLink to="/dashboard" as={NavLink}>
               Dashboard
@@ -62,8 +51,8 @@ const AppHeader = () => {
           <CNavItem>
             <CNavLink href="#">Settings</CNavLink>
           </CNavItem>
-        </CHeaderNav>
-        <CHeaderNav className="ms-auto">
+        </CHeaderNav> */}
+        {/* <CHeaderNav className="ms-auto">
           <CNavItem>
             <CNavLink href="#">
               <CIcon icon={cilBell} size="lg" />
@@ -79,11 +68,11 @@ const AppHeader = () => {
               <CIcon icon={cilEnvelopeOpen} size="lg" />
             </CNavLink>
           </CNavItem>
-        </CHeaderNav>
+        </CHeaderNav> */}
         <CHeaderNav>
-          <li className="nav-item py-1">
+          {/* <li className="nav-item py-1">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
-          </li>
+          </li> */}
           <CDropdown variant="nav-item" placement="bottom-end">
             <CDropdownToggle caret={false}>
               {colorMode === 'dark' ? (

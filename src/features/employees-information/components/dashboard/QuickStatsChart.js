@@ -13,14 +13,7 @@ const QuickStatsChart = ({ title, color, data }) => {
   return (
     <CWidgetStatsA
       color={color}
-      value={
-        <>
-          2.49%{' '}
-          <span className="fs-6 fw-normal">
-            (84.7% <CIcon icon={cilArrowTop} />)
-          </span>
-        </>
-      }
+      value={data}
       title={title}
       action={
         <CDropdown alignment="end">

@@ -14,14 +14,21 @@ import {
   CDropdownItem,
   CFormLabel,
   CFormTextarea,
+  CFormSelect,
+  CTooltip,
 } from '@coreui/react'
 import { deparmentCols } from '../../components/tableColumns'
 import { SearchableTable } from '../../../../components/zReuse/zComponents'
 import { useEffect, useState } from 'react'
-import { createDepartment, deleteDepartment, getDepartments } from '../../api/api'
+import {
+  createDepartment,
+  deleteDepartment,
+  exportDepartment,
+  getDepartments,
+  getEmployees,
+} from '../../api/api'
 import CIcon from '@coreui/icons-react'
-import { cilPlus } from '@coreui/icons'
-import { getEmployees } from '../../../employee/api/api'
+import { cilCloudDownload, cilPlus } from '@coreui/icons'
 
 const SettingDepartmentalStructure = () => {
   const [visible, setVisible] = useState(false)
@@ -54,7 +61,15 @@ const SettingDepartmentalStructure = () => {
     setVisible(false)
   }
 
-  const handleSave = async (data) => {
+  const handleExport = async () => {
+    try {
+      await exportDepartment()
+    } catch (error) {
+      console.error(err)
+    }
+  }
+
+  const handleSave = async () => {
     try {
       const res = await createDepartment(name, description, selectedManagerId)
       console.log(res)
@@ -70,6 +85,11 @@ const SettingDepartmentalStructure = () => {
           Cơ cấu phòng ban
         </CCol>
         <CCol className="gap-2 d-flex justify-content-end align-items-center">
+          <CTooltip content="Xuất file Excel" placement="bottom">
+            <CButton color="secondary" onClick={() => handleExport()}>
+              <CIcon icon={cilCloudDownload} />
+            </CButton>
+          </CTooltip>
           <CButton color="info" onClick={() => setVisible(!visible)}>
             <CIcon icon={cilPlus} />
             Thêm
@@ -102,26 +122,13 @@ const SettingDepartmentalStructure = () => {
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
           />
-          <div>
-            <CFormLabel>Người quản lý</CFormLabel>
-          </div>
-          <CDropdown>
-            <CDropdownToggle color="primary">
-              {employees.find((e) => e.employeeId === selectedManagerId)?.fullName ||
-                'Chọn người quản lý'}
-            </CDropdownToggle>
-            <CDropdownMenu>
-              {employees.map((e, i) => (
-                <CDropdownItem
-                  key={i}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedManagerId(e.employeeId)}
-                >
-                  {e.fullName}
-                </CDropdownItem>
-              ))}
-            </CDropdownMenu>
-          </CDropdown>
+          <CFormSelect label="Người quản lý">
+            {employees.map((e, i) => (
+              <option key={i} value={e.fullName} onClick={() => setSelectedManagerId(e.employeeId)}>
+                {e.fullName}
+              </option>
+            ))}
+          </CFormSelect>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setVisible(!visible)}>

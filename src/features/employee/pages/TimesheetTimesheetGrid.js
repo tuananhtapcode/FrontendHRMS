@@ -1,13 +1,26 @@
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import { CButton, CButtonGroup, CCard, CCol, CRow } from '@coreui/react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cil4k } from '@coreui/icons'
 import { EmployeeCard } from '../../../components/zReuse/zComponents'
+import { getTimeSheet } from '../api/api'
 
 const TimesheetTimesheetGrid = () => {
   const [calendarView, setCalendarView] = useState('dayGridMonth')
   const calendarRef = useRef()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getTimeSheet()
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleCalendarView = (view) => {
     setCalendarView(view)
