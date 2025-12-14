@@ -137,9 +137,6 @@ const AttendanceRules = () => {
       {/* HEADER VÀ NÚT GỢI Ý */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0 fw-bold">Quy định chấm công</h4>
-        <CButton color="white" style={{ border: '1px solid #f9b115', color: '#f9b115' }}>
-          + Gợi ý hình thức chấm công
-        </CButton>
       </div>
 
       <CCard>

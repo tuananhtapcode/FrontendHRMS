@@ -40,12 +40,12 @@ const _nav = [
         to: '/timesheet/shiftassignmentSummary',
         // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
       },
-      {
-        component: CNavItem,
-        name: 'Đăng kí ca',
-        to: '/timesheet/shiftsRegistration',
-        // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Đăng kí ca',
+      //   to: '/timesheet/shiftsRegistration',
+      //   // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+      // },
     ],
   },
   {
@@ -54,12 +54,12 @@ const _nav = [
     to: '/cham-cong',
     icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
     items: [
-      {
-        component: CNavItem,
-        name: 'Bảng chấm công chi tiết',
-        to: '/timesheet/detailedTimesheet',
-        // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Bảng chấm công chi tiết',
+      //   to: '/timesheet/detailedTimesheet',
+      //   // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+      // },
       {
         component: CNavItem,
         name: 'Bảng chấm công tổng hợp',
@@ -93,67 +93,67 @@ const _nav = [
         to: '/timesheet/overtimeRequest',
         // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
       },
-      {
-        component: CNavItem,
-        name: 'Đề nghị đổi ca',
-        to: '/timesheet/shiftSwap',
-        // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Đề nghị đổi ca',
+      //   to: '/timesheet/shiftSwap',
+      //   // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+      // },
     ],
   },
   // --- PHẦN BÁO CÁO ĐÃ THÊM 'title' ---
-  {
-    component: CNavGroup,
-    name: 'Báo cáo',
-    to: '/bao-cao',
-    icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Danh sách đi muộn, về sớm, nghỉ',
-        to: '/timesheet/lateearlyReport',
-        //icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        title: 'Danh sách nhân viên đi muộn, về sớm, nghỉ', // <-- ĐÃ THÊM
-      },
+  // {
+  //   component: CNavGroup,
+  //   name: 'Báo cáo',
+  //   to: '/bao-cao',
+  //   icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
+  //   items: [
+  //     {
+  //       component: CNavItem,
+  //       name: 'Danh sách đi muộn, về sớm, nghỉ',
+  //       to: '/timesheet/lateearlyReport',
+  //       //icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  //       title: 'Danh sách nhân viên đi muộn, về sớm, nghỉ', // <-- ĐÃ THÊM
+  //     },
       
-      {
-        component: CNavItem,
-        name: 'Tổng hợp tình hình đi muộn về sớm của nhân viên',
-        to: '/timesheet/summarylateearlyReport',
-       // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        title: 'Tổng hợp tình hình đi muộn về sớm của nhân viên', // <-- ĐÃ THÊM
-      },
-      {
-        component: CNavItem,
-        name: 'Thống kê tình hình đi làm, vắng mặt theo ca làm việc',
-        to: '/timesheet/attendancebyShift',
-       // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        title: 'Thống kê tình hình đi làm, vắng mặt theo ca làm việc', // <-- ĐÃ THÊM
-      },
-      {
-        component: CNavItem,
-        name: 'Tổng hợp số giờ làm việc của nhân viên',
-        to: '/timesheet/totalworkingHours',
-       // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        title: 'Tổng hợp số giờ làm việc của nhân viên', // <-- ĐÃ THÊM
-      },
-      {
-        component: CNavItem,
-        name: 'Danh sách nhân viên làm thêm giờ',
-        to: '/timesheet/overtimeEList',
-       // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        title: 'Danh sách nhân viên làm thêm giờ', // <-- ĐÃ THÊM
-      },
-      {
-        component: CNavItem,
-        name: 'Tổng hợp tình hình làm thêm của nhân viên',
-        to: '/timesheet/overtimeSummary',
-       // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        title: 'Tổng hợp tình hình làm thêm của nhân viên', // <-- ĐÃ THÊM
-      },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Tổng hợp tình hình đi muộn về sớm của nhân viên',
+  //       to: '/timesheet/summarylateearlyReport',
+  //      // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  //       title: 'Tổng hợp tình hình đi muộn về sớm của nhân viên', // <-- ĐÃ THÊM
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Thống kê tình hình đi làm, vắng mặt theo ca làm việc',
+  //       to: '/timesheet/attendancebyShift',
+  //      // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  //       title: 'Thống kê tình hình đi làm, vắng mặt theo ca làm việc', // <-- ĐÃ THÊM
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Tổng hợp số giờ làm việc của nhân viên',
+  //       to: '/timesheet/totalworkingHours',
+  //      // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  //       title: 'Tổng hợp số giờ làm việc của nhân viên', // <-- ĐÃ THÊM
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Danh sách nhân viên làm thêm giờ',
+  //       to: '/timesheet/overtimeEList',
+  //      // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  //       title: 'Danh sách nhân viên làm thêm giờ', // <-- ĐÃ THÊM
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Tổng hợp tình hình làm thêm của nhân viên',
+  //       to: '/timesheet/overtimeSummary',
+  //      // icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  //       title: 'Tổng hợp tình hình làm thêm của nhân viên', // <-- ĐÃ THÊM
+  //     },
       
-    ],
-  },
+  //   ],
+  // },
   // --- HẾT PHẦN BÁO CÁO ---
   {
     component: CNavGroup,

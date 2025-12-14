@@ -6,6 +6,7 @@ import {
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
+  CFormCheck,
   CFormInput,
   CInputGroup,
   CInputGroupText,
@@ -15,19 +16,34 @@ import {
   CTableDataCell,
   CTableHead,
   CTableHeaderCell,
-  CTableRow,
+  CTableRow
 } from '@coreui/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 // Imports cho Icons
 import {
-  cilEnvelopeClosed, // Icon Email
+  cilEnvelopeClosed,
   cilFile,
   cilFilter,
   cilSearch,
-  cilSettings
+  cilSettings,
+  cilX
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
+
+// =====================================================================
+// 0. CẤU HÌNH CỘT (QUẢN LÝ CỘT & EXCEL)
+// =====================================================================
+const DEFAULT_COLUMNS = [
+  { key: 'stt', label: 'STT', visible: true, width: '50px', align: 'center' },
+  { key: 'code', label: 'Mã nhân viên (2)', visible: true, width: '120px', sticky: true }, // Cột dính
+  { key: 'name', label: 'Tên nhân viên', visible: true },
+  { key: 'position', label: 'Vị trí công việc', visible: true, align: 'center' },
+  { key: 'department', label: 'Đơn vị công tác', visible: true, align: 'center' },
+  { key: 'date', label: 'Ngày (1)', visible: true, align: 'center' },
+  { key: 'shift', label: 'Ca', visible: true, align: 'center' },
+  { key: 'minutes', label: 'Số phút', visible: true, align: 'end' }, // Căn phải
+]
 
 // =====================================================================
 // 1. CSS TÙY CHỈNH
@@ -35,227 +51,253 @@ import CIcon from '@coreui/icons-react'
 const LateEarlyReportStyles = () => (
   <style>
     {`
-    .page-container {
-      padding: 1rem;
-      background-color: #f3f4f7;
-      min-height: 100vh;
-    }
-
-    /* --- Header --- */
-    .page-header {
-      margin-bottom: 1rem;
-    }
-    .page-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      color: #3c4b64;
-    }
-    .page-subtitle {
-      color: #768192;
-      font-size: 0.85rem;
-    }
-
-    /* --- Filter Bar --- */
-    .filter-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0; 
-      padding: 0.5rem 0;
-    }
-    .filter-right {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .search-bar {
-      width: 300px;
-    }
+    .page-container { padding: 1rem; background-color: #f3f4f7; min-height: 100vh; }
+    .page-header { margin-bottom: 1rem; }
+    .page-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem; color: #3c4b64; }
+    .page-subtitle { color: #768192; font-size: 0.85rem; }
+    .filter-bar { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
+    .filter-right { display: flex; gap: 8px; align-items: center; width: 100%; justify-content: flex-end; position: relative; }
+    .search-bar { width: 300px; }
     
-    /* Nút Chọn tham số (Màu Cam) */
-    .btn-orange {
-      background-color: #f9b115;
-      border-color: #f9b115;
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.875rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-orange:hover {
-      background-color: #e59d0e;
-      border-color: #e59d0e;
-      color: #fff;
-    }
-    .btn-orange .dropdown-toggle::after {
-      margin-left: 0.5em; /* Chỉnh khoảng cách mũi tên */
-    }
+    .btn-orange { background-color: #ea580c; border-color: #ea580c; color: white; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .btn-orange:hover { background-color: #c2410c; border-color: #c2410c; color: white; }
+    .btn-orange .dropdown-toggle::after { margin-left: 0.5em; }
 
-    /* Nút Icon nhỏ */
-    .icon-btn {
-      color: #768192;
-      border-color: #d8dbe0;
-      background-color: #fff;
-      padding: 0.375rem 0.5rem;
-    }
-    .icon-btn:hover {
-      background-color: #ebedef;
-      color: #3c4b64;
-    }
+    .icon-btn { color: #768192; border-color: #d8dbe0; background-color: #fff; padding: 0.375rem 0.5rem; }
+    .icon-btn:hover { background-color: #ebedef; color: #3c4b64; }
 
-    /* --- Table Styles --- */
-    .table-header-cell {
-      font-weight: 700;
-      font-size: 0.75rem;
-      background-color: #f0f2f5; /* Màu nền header xám nhạt */
-      color: #3c4b64;
-      white-space: nowrap;
-      vertical-align: middle;
-      text-align: center;
-      border-bottom: 1px solid #d8dbe0;
-    }
+    /* Table Styles */
+    .table-header-cell { font-weight: 700; font-size: 0.75rem; background-color: #f0f2f5; color: #3c4b64; white-space: nowrap; vertical-align: middle; text-align: center; border-bottom: 1px solid #d8dbe0; }
     
-    /* Cột dính (Sticky) */
-    .sticky-col-first {
-      position: -webkit-sticky;
-      position: sticky;
-      left: 0;
-      z-index: 10;
-      background-color: #fff; 
-      border-right: 1px solid #d8dbe0;
-    }
-    .table-header-cell.sticky-col-first {
-        background-color: #f0f2f5; /* Header dính cũng phải xám */
-        z-index: 20; /* Header dính phải nổi cao nhất */
-    }
+    /* Sticky Column Logic */
+    .sticky-col-first { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #fff; border-right: 1px solid #d8dbe0; }
+    .table-header-cell.sticky-col-first { background-color: #f0f2f5; z-index: 20; }
     
-    /* --- Empty State --- */
-    .empty-state-row {
-      height: 400px; /* Chiều cao cố định để căn giữa */
-    }
-    .empty-state-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #8a93a2;
-    }
-    .empty-state-text {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
+    /* Empty State */
+    .empty-state-row { height: 400px; }
+    .empty-state-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #8a93a2; }
+    .empty-state-text { margin-top: 1rem; font-size: 0.9rem; }
+
+    /* Popup Styles (Mới thêm) */
+    .popup-container { position: absolute; top: 100%; right: 0; width: 320px; background: white; border: 1px solid #d8dbe0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; z-index: 1000; margin-top: 5px; display: flex; flex-direction: column; max-height: 500px; }
+    .popup-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #ebedef; }
+    .popup-title { font-weight: 700; font-size: 1rem; color: #3c4b64; margin: 0; }
+    .popup-body { padding: 12px 16px; overflow-y: auto; flex-grow: 1; }
+    .popup-footer { padding: 12px 16px; border-top: 1px solid #ebedef; display: flex; justify-content: space-between; background-color: #f9fafb; }
+    .col-setting-item { display: flex; align-items: center; margin-bottom: 10px; justify-content: space-between; }
     `}
   </style>
 )
 
 // =====================================================================
-// 2. COMPONENT HEADER
+// 2. COMPONENT POPUPS (FILTER & SETTINGS)
 // =====================================================================
-const PageHeader = () => {
+
+const AdvancedFilterPopup = ({ visible, onClose, onApply, columns }) => {
+  const [checkedColumns, setCheckedColumns] = useState({})
+  const [columnSearchValues, setColumnSearchValues] = useState({})
+
+  if (!visible) return null
+
+  const handleCheckColumn = (key) => setCheckedColumns(p => ({ ...p, [key]: !p[key] }))
+
+  const handleApply = () => {
+    const activeFilters = {}
+    Object.keys(checkedColumns).forEach(key => {
+      if (checkedColumns[key] && columnSearchValues[key]) {
+        activeFilters[key] = columnSearchValues[key]
+      }
+    })
+    onApply(activeFilters)
+    onClose()
+  }
+
+  const handleClear = () => {
+    setCheckedColumns({})
+    setColumnSearchValues({})
+    onApply({})
+    onClose()
+  }
+
   return (
-    <div className="page-header">
-      <h2 className="page-title">Danh sách nhân viên đi muộn, về sớm, nghỉ</h2>
-      <div className="page-subtitle">
-        Hôm nay, SinhvienDungThu, Xem theo: Đi muộn
+    <div className="popup-container">
+      <div className="popup-header">
+        <h5 className="popup-title">Bộ lọc nâng cao</h5>
+        <CButton color="link" size="sm" className="p-0 text-dark" onClick={onClose}><CIcon icon={cilX} /></CButton>
+      </div>
+      <div className="popup-body">
+        {columns.filter(c => c.key !== 'stt' && c.key !== 'pin' && c.visible).map(col => (
+          <div key={col.key} className="mb-2">
+            <CFormCheck
+              label={col.label}
+              checked={!!checkedColumns[col.key]}
+              onChange={() => handleCheckColumn(col.key)}
+            />
+            {checkedColumns[col.key] && (
+              <CFormInput
+                size="sm"
+                className="mt-1 ms-4"
+                placeholder={`Lọc ${col.label}...`}
+                value={columnSearchValues[col.key] || ''}
+                onChange={e => setColumnSearchValues(p => ({ ...p, [col.key]: e.target.value }))}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="popup-footer">
+        <CButton color="light" size="sm" onClick={handleClear}>Bỏ lọc</CButton>
+        <CButton size="sm" className="btn-orange text-white" onClick={handleApply}>Áp dụng</CButton>
+      </div>
+    </div>
+  )
+}
+
+const ColumnSettingsPopup = ({ visible, onClose, columns, onUpdateColumns, onResetDefault }) => {
+  const [tempColumns, setTempColumns] = useState(columns)
+  useEffect(() => { if (visible) setTempColumns(columns) }, [visible, columns])
+  
+  if (!visible) return null
+
+  const toggleCol = (key) => setTempColumns(prev => prev.map(c => c.key === key ? { ...c, visible: !c.visible } : c))
+  const handleSave = () => { onUpdateColumns(tempColumns); onClose() }
+
+  return (
+    <div className="popup-container">
+      <div className="popup-header">
+        <h5 className="popup-title">Tùy chỉnh cột</h5>
+        <CButton color="link" size="sm" className="p-0 text-dark" onClick={onClose}><CIcon icon={cilX} /></CButton>
+      </div>
+      <div className="popup-body">
+        {tempColumns.map(col => (
+          <div key={col.key} className="col-setting-item">
+            <CFormCheck label={col.label} checked={col.visible} onChange={() => toggleCol(col.key)} />
+          </div>
+        ))}
+      </div>
+      <div className="popup-footer">
+        <CButton color="light" size="sm" onClick={() => { onResetDefault(); onClose() }}>Mặc định</CButton>
+        <CButton size="sm" className="btn-orange text-white" onClick={handleSave}>Lưu</CButton>
       </div>
     </div>
   )
 }
 
 // =====================================================================
-// 3. COMPONENT FILTER BAR
+// 3. COMPONENT HEADER
 // =====================================================================
-const FilterBar = ({ filters, onFilterChange }) => {
+const PageHeader = () => (
+  <div className="page-header">
+    <h2 className="page-title">Danh sách nhân viên đi muộn, về sớm, nghỉ</h2>
+    <div className="page-subtitle">Hôm nay, Xem theo: Đi muộn</div>
+  </div>
+)
+
+// =====================================================================
+// 4. COMPONENT FILTER BAR (ĐÃ TÍCH HỢP)
+// =====================================================================
+const FilterBar = ({ 
+  filters, onFilterChange, 
+  onExportExcel, 
+  onApplyAdvancedFilter, columns, onUpdateColumns, onResetDefaultColumns 
+}) => {
+  const [showFilterPopup, setShowFilterPopup] = useState(false)
+  const [showSettingsPopup, setShowSettingsPopup] = useState(false)
+
   const handleSearchChange = (e) => {
     onFilterChange((prev) => ({ ...prev, search: e.target.value }))
   }
 
   return (
     <div className="filter-bar">
-      <div className="filter-left">
-         {/* Trống bên trái, chỉ có search bên phải trong ảnh, nhưng tôi để search bên phải cho giống layout chung */}
-      </div>
+      <div className="filter-left"></div>
       <div className="filter-right">
-        {/* Thanh tìm kiếm */}
+        {/* Search */}
         <CInputGroup className="search-bar" size="sm">
-          <CInputGroupText className="bg-white border-end-0">
-            <CIcon icon={cilSearch} size="sm" />
-          </CInputGroupText>
-          <CFormInput
-            className="border-start-0 ps-0"
-            placeholder="Tìm kiếm"
-            value={filters.search}
-            onChange={handleSearchChange}
-          />
+          <CInputGroupText className="bg-white border-end-0"><CIcon icon={cilSearch} size="sm" /></CInputGroupText>
+          <CFormInput className="border-start-0 ps-0" placeholder="Tìm kiếm" value={filters.search} onChange={handleSearchChange} />
         </CInputGroup>
         
-        {/* Nút Chọn tham số (Màu Cam) */}
+        {/* Dropdown */}
         <CDropdown>
-          <CDropdownToggle className="btn-orange" size="sm">
-            Chọn tham số
-          </CDropdownToggle>
+          <CDropdownToggle className="btn-orange" size="sm">Chọn tham số</CDropdownToggle>
           <CDropdownMenu>
             <CDropdownItem href="#">Tham số 1</CDropdownItem>
             <CDropdownItem href="#">Tham số 2</CDropdownItem>
           </CDropdownMenu>
         </CDropdown>
 
-        {/* Các nút icon nhỏ */}
-        <CButton color="light" variant="outline" className="icon-btn" size="sm" title="Gửi Email">
-          <CIcon icon={cilEnvelopeClosed} size="sm" />
-        </CButton>
-        <CButton color="light" variant="outline" className="icon-btn" size="sm" title="Xuất Excel">
+        {/* Buttons */}
+        <CButton color="light" variant="outline" className="icon-btn" size="sm" title="Gửi Email"><CIcon icon={cilEnvelopeClosed} size="sm" /></CButton>
+        
+        {/* EXCEL */}
+        <CButton color="light" variant="outline" className="icon-btn" size="sm" title="Xuất Excel" onClick={onExportExcel}>
           <CIcon icon={cilFile} size="sm" /> 
         </CButton>
-        <CButton color="light" variant="outline" className="icon-btn" size="sm" title="Bộ lọc">
-          <CIcon icon={cilFilter} size="sm" />
-        </CButton>
-        <CButton color="light" variant="outline" className="icon-btn" size="sm" title="Cài đặt">
-          <CIcon icon={cilSettings} size="sm" />
-        </CButton>
+
+        {/* FILTER */}
+        <div style={{ position: 'relative' }}>
+          <CButton 
+            color="light" variant="outline" className="icon-btn" size="sm" title="Bộ lọc"
+            onClick={() => { setShowFilterPopup(!showFilterPopup); setShowSettingsPopup(false) }}
+            active={showFilterPopup}
+          >
+            <CIcon icon={cilFilter} size="sm" />
+          </CButton>
+          <AdvancedFilterPopup visible={showFilterPopup} onClose={() => setShowFilterPopup(false)} onApply={onApplyAdvancedFilter} columns={columns} />
+        </div>
+
+        {/* SETTINGS */}
+        <div style={{ position: 'relative' }}>
+          <CButton 
+            color="light" variant="outline" className="icon-btn" size="sm" title="Cài đặt"
+            onClick={() => { setShowSettingsPopup(!showSettingsPopup); setShowFilterPopup(false) }}
+            active={showSettingsPopup}
+          >
+            <CIcon icon={cilSettings} size="sm" />
+          </CButton>
+          <ColumnSettingsPopup visible={showSettingsPopup} onClose={() => setShowSettingsPopup(false)} columns={columns} onUpdateColumns={onUpdateColumns} onResetDefault={onResetDefaultColumns} />
+        </div>
       </div>
     </div>
   )
 }
 
 // =====================================================================
-// 4. COMPONENT TABLE
+// 5. COMPONENT TABLE (ĐÃ CẬP NHẬT RENDER ĐỘNG)
 // =====================================================================
-const PageTable = ({ data }) => {
+const PageTable = ({ data, columns }) => {
   const hasData = Array.isArray(data) && data.length > 0
+  
+  // Lọc ra các cột cần hiển thị
+  const visibleColumns = columns.filter(c => c.visible)
 
   return (
     <div style={{ borderTop: '1px solid #d8dbe0' }}>
       <CTable hover responsive className="mb-0" small>
         <CTableHead>
           <CTableRow>
-            <CTableHeaderCell className="table-header-cell" style={{ width: '40px' }}>STT</CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell sticky-col-first text-start" style={{ width: '120px' }}>
-              Mã nhân viên (2)
-            </CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell" style={{ width: '30px' }}>
-                {/* Icon cái ghim */}
-                <span style={{fontSize: '0.8rem'}}>📌</span>
-            </CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell text-start">Tên nhân viên</CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell">Vị trí công việc</CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell">Đơn vị công tác</CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell">Ngày (1)</CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell">Ca</CTableHeaderCell>
-            <CTableHeaderCell className="table-header-cell text-end">Số phút</CTableHeaderCell>
+            {visibleColumns.map(col => {
+              // Xử lý style cho header
+              let className = "table-header-cell"
+              if (col.sticky) className += " sticky-col-first"
+              if (col.align) className += ` text-${col.align}`
+              else className += " text-start" // Default align left for header usually look better unless numbered
+
+              return (
+                <CTableHeaderCell key={col.key} className={className} style={{ width: col.width }}>
+                  {col.label}
+                </CTableHeaderCell>
+              )
+            })}
           </CTableRow>
         </CTableHead>
         <CTableBody>
           {!hasData ? (
-            // Empty State Row (Chiếm trọn 9 cột)
             <CTableRow>
-              <CTableDataCell colSpan={9} className="p-0 border-0">
+              <CTableDataCell colSpan={visibleColumns.length} className="p-0 border-0">
                 <div className="empty-state-row">
                     <div className="empty-state-container">
-                        {/* Bạn có thể dùng CIcon cilDescription hoặc một SVG khác nếu muốn */}
                         <span style={{ fontSize: '1.5rem', marginBottom: '10px', opacity: 0.5 }}>📄</span> 
                         <span className="empty-state-text">Không có dữ liệu</span>
                     </div>
@@ -263,18 +305,27 @@ const PageTable = ({ data }) => {
               </CTableDataCell>
             </CTableRow>
           ) : (
-            // Data Rows
             data.map((item, index) => (
-              <CTableRow key={item.id}>
-                <CTableDataCell className="text-center">{index + 1}</CTableDataCell>
-                <CTableDataCell className="sticky-col-first font-weight-bold">{item.code}</CTableDataCell>
-                <CTableDataCell className="text-center"></CTableDataCell>
-                <CTableDataCell>{item.name}</CTableDataCell>
-                <CTableDataCell className="text-center">{item.position}</CTableDataCell>
-                <CTableDataCell className="text-center">{item.department}</CTableDataCell>
-                <CTableDataCell className="text-center">{item.date}</CTableDataCell>
-                <CTableDataCell className="text-center">{item.shift}</CTableDataCell>
-                <CTableDataCell className="text-end text-danger font-weight-bold">{item.minutes}</CTableDataCell>
+              <CTableRow key={item.id || index}>
+                {visibleColumns.map(col => {
+                  let className = ""
+                  if (col.sticky) className += " sticky-col-first font-weight-bold"
+                  if (col.align) className += ` text-${col.align}`
+                  
+                  // Xử lý nội dung đặc biệt
+                  let content = item[col.key]
+                  
+                  // Logic riêng cho từng loại cột
+                  if (col.key === 'stt') content = index + 1
+                  if (col.key === 'pin') content = '' // Icon ghim (hiện tại để trống theo yêu cầu table cũ)
+                  if (col.key === 'minutes') className += " text-danger font-weight-bold"
+
+                  return (
+                    <CTableDataCell key={col.key} className={className}>
+                      {content}
+                    </CTableDataCell>
+                  )
+                })}
               </CTableRow>
             ))
           )}
@@ -285,27 +336,72 @@ const PageTable = ({ data }) => {
 }
 
 // =====================================================================
-// 5. COMPONENT CHA (MAIN)
+// 6. COMPONENT CHA (MAIN)
 // =====================================================================
 const LateEarlyReportPage = () => {
-  // State data: để rỗng ([]) để hiển thị Empty State như ảnh
-  const [data, setData] = useState([]) 
-  const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({
-    search: '',
-  })
+  // Mock Data để test (Bỏ comment để thấy dữ liệu)
+  // const MOCK_DATA = [
+  //   { id: 1, code: 'NV001', name: 'Nguyễn Văn A', position: 'Nhân viên', department: 'IT', date: '12/12/2025', shift: 'Ca 1', minutes: 15 },
+  //   { id: 2, code: 'NV002', name: 'Trần Thị B', position: 'Kế toán', department: 'Tài chính', date: '12/12/2025', shift: 'Ca 1', minutes: 5 },
+  // ]
   
-  // Giả lập loading
+  const [data, setData] = useState([]) // Để [] để hiện empty state như yêu cầu
+  const [loading, setLoading] = useState(true)
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS)
+  const [filters, setFilters] = useState({ search: '', columnFilters: {} })
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false)
+      // setData(MOCK_DATA) // Uncomment để load dữ liệu test
     }, 500)
     return () => clearTimeout(timer)
   }, [])
 
-  const handleReload = () => {
-    setLoading(true)
-    setTimeout(() => setLoading(false), 500)
+  // --- LOGIC LỌC DỮ LIỆU ---
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      // 1. Tìm kiếm chung
+      const search = filters.search.toLowerCase()
+      const matchSearch = !search || Object.values(item).some(v => String(v).toLowerCase().includes(search))
+
+      // 2. Tìm kiếm nâng cao
+      const columnFilters = filters.columnFilters || {}
+      const matchColumns = Object.keys(columnFilters).every(key => {
+        const filterVal = columnFilters[key].toLowerCase()
+        const itemVal = String(item[key] || '').toLowerCase()
+        return itemVal.includes(filterVal)
+      })
+
+      return matchSearch && matchColumns
+    })
+  }, [data, filters])
+
+  // --- LOGIC XUẤT EXCEL ---
+  const handleExportExcel = () => {
+    const visibleCols = columns.filter(c => c.visible && c.key !== 'pin') // Bỏ cột Pin khi xuất
+    const headers = visibleCols.map(c => c.label)
+    
+    const csvRows = [headers.join(',')]
+    
+    filteredData.forEach((item, index) => {
+      const rowData = visibleCols.map(c => {
+        let val = item[c.key] || ''
+        if (c.key === 'stt') val = index + 1
+        return `"${val}"`
+      })
+      csvRows.push(rowData.join(','))
+    })
+
+    const csvString = csvRows.join('\n')
+    const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'bao_cao_di_muon_ve_som.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (loading) { 
@@ -325,17 +421,19 @@ const LateEarlyReportPage = () => {
         
         <CCard className="border-0 shadow-sm">
           <CCardBody className="p-0"> 
-            {/* Phần Filter nằm bên trong Card */}
             <div className="p-2 border-bottom"> 
               <FilterBar 
                 filters={filters} 
                 onFilterChange={setFilters}
-                onReload={handleReload}
+                onExportExcel={handleExportExcel}
+                onApplyAdvancedFilter={(cf) => setFilters(p => ({ ...p, columnFilters: cf }))}
+                columns={columns}
+                onUpdateColumns={setColumns}
+                onResetDefaultColumns={() => setColumns(DEFAULT_COLUMNS)}
               />
             </div>
 
-            {/* Phần Table */}
-            <PageTable data={data} />
+            <PageTable data={filteredData} columns={columns} />
           </CCardBody>
         </CCard>
       </div>

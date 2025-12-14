@@ -174,9 +174,6 @@ const TimesheetConfig = () => {
         <div className="d-flex align-items-center">
           <h4 className="mb-0 fw-bold">Quy định chấm công</h4>
         </div>
-        <CButton color="white" style={{ border: '1px solid #f9b115', color: '#f9b115' }}>
-          + Gợi ý hình thức chấm công
-        </CButton>
       </div>
 
       <CCard style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>

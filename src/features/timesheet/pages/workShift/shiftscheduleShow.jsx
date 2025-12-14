@@ -8,15 +8,12 @@ import {
   cilSearch,
   cilSettings,
   cilTrash,
-  cilX
+  cilX,
+  cilWarning // Import thêm icon cảnh báo cho Modal xóa
 } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import {
   CButton,
-  CDropdown,
-  CDropdownItem,
-  CDropdownMenu,
-  CDropdownToggle,
   CFormCheck,
   CFormInput,
   CInputGroup,
@@ -37,26 +34,29 @@ import {
 } from '@coreui/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { shiftscheduleApi } from '../../api/shiftscheduleApi'; 
 
 // =====================================================================
 // 0. CẤU HÌNH CỘT
 // =====================================================================
 const DEFAULT_COLUMNS = [
-  { key: 'checkbox', label: '', visible: true, width: 50, type: 'checkbox' },
-  { key: 'shift_code', label: 'Mã ca', visible: true, width: 120 },
-  { key: 'shift_name', label: 'Tên ca', visible: true, width: 220 },
-  { key: 'applied_unit', label: 'Đơn vị áp dụng', visible: true, width: 200 },
-  { key: 'start_time', label: 'Giờ bắt đầu ca', visible: true, width: 150, align: 'center' },
-  { key: 'check_in_from', label: 'Chấm vào đầu ca từ', visible: true, width: 180, align: 'center' },
-  { key: 'check_in_to', label: 'Chấm vào đầu ca đến', visible: true, width: 180, align: 'center' },
-  { key: 'end_time', label: 'Giờ kết thúc ca', visible: true, width: 150, align: 'center' },
-  { key: 'check_out_from', label: 'Chấm ra cuối ca từ', visible: true, width: 180, align: 'center' },
-  { key: 'check_out_to', label: 'Chấm ra cuối ca đến', visible: true, width: 180, align: 'center' },
+  { key: 'shiftId', label: 'ID', visible: true, width: 60, align: 'center' },
+  { key: 'code', label: 'Mã ca', visible: true, width: 100 },
+  { key: 'name', label: 'Tên ca', visible: true, width: 180 },
+  { key: 'startTime', label: 'Bắt đầu', visible: true, width: 90, align: 'center' },
+  { key: 'endTime', label: 'Kết thúc', visible: true, width: 90, align: 'center' },
+  { key: 'expectedWorkMinutes', label: 'Phút làm', visible: true, width: 90, align: 'center' },
+  { key: 'breakMinutes', label: 'Nghỉ', visible: true, width: 70, align: 'center' },
+  { key: 'graceMinutes', label: 'Cho phép trễ', visible: true, width: 70, align: 'center' },
+  { key: 'overtimeLabel', label: 'Tính OT', visible: true, width: 80, align: 'center' },
+  { key: 'payType', label: 'Loại lương', visible: true, width: 100, align: 'center' },
+  { key: 'hourlyRate', label: 'Lương/Giờ', visible: true, width: 100, align: 'right' },
+  { key: 'overtimeRate', label: 'Hệ số OT', visible: true, width: 90, align: 'center' },
   { key: 'actions', label: '', visible: true, width: 80 }
 ];
 
 // =====================================================================
-// 1. CSS TÙY CHỈNH
+// 1. CSS STYLES
 // =====================================================================
 const ShiftListStyles = () => (
   <style>
@@ -70,7 +70,6 @@ const ShiftListStyles = () => (
     .filter-left { flex-grow: 1; }
     .search-bar { width: 300px; max-width: 100%; }
     .filter-right { display: flex; gap: 8px; align-items: center; }
-    .filter-right .dropdown-toggle, .filter-right .dropdown-toggle *, .filter-right .dropdown-item, .filter-right .dropdown-item * { cursor: pointer !important; user-select: none; }
     .btn-orange { background-color: #ea580c; border-color: #ea580c; color: white; font-weight: 600; }
     .btn-orange:hover { background-color: #c2410c; color: white; border-color: #c2410c; }
     .btn-icon-only { padding: 0.25rem 0.5rem; display: flex; align-items: center; justify-content: center; }
@@ -92,78 +91,24 @@ const ShiftListStyles = () => (
     .table-wrapper-fullscreen { flex-grow: 1; background-color: #fff; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: auto; position: relative; }
     .table-header-cell { background-color: #f0f2f5; font-weight: 700; font-size: 0.8rem; color: #3c4b64; white-space: nowrap; vertical-align: middle; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 0 #d8dbe0; }
     tbody tr:hover { background-color: #ececec; }
-    /* === ACTION BUTTONS CSS === */
-    .row-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-
-      /* Mặc định ẩn */
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(5px);
-      transition: all 0.2s ease-in-out;
-    }
-
-    /* Khi hover vào dòng TR thì hiện row-actions */
-    tbody tr:hover .row-actions {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-    .btn-action {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: transparent;
-      border: none;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      cursor: pointer;
-
-      color: #768192;
-      transition: all 0.2s;
-    }
-
-    .btn-action:hover {
-      background-color: #e2e8f0;
-      transform: scale(1.1);
-    }
-
-    .btn-action.edit:hover {
-      color: #f59e0b;
-      background-color: #fef3c7;
-    }
-
-    .btn-action.delete:hover {
-      color: #ef4444;
-      background-color: #fee2e2;
-    }
-    /* === STICKY COLUMN === */
-    .sticky-col-last {
-      position: sticky;
-      right: 0;
-      z-index: 12;
-      background: #fff;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
-    }
-
-    /* Header sticky */
-    .table-header-cell.sticky-col-last {
-      z-index: 15;
-    }
-
-
+    
+    .row-actions { display: flex; gap: 8px; justify-content: center; opacity: 0; visibility: hidden; transform: translateY(5px); transition: all 0.2s ease-in-out; }
+    tbody tr:hover .row-actions { opacity: 1; visibility: visible; transform: translateY(0); }
+    .btn-action { width: 32px; height: 32px; border-radius: 50%; background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #768192; transition: all 0.2s; }
+    .btn-action:hover { background-color: #e2e8f0; transform: scale(1.1); }
+    .btn-action.edit:hover { color: #f59e0b; background-color: #fef3c7; }
+    .btn-action.delete:hover { color: #ef4444; background-color: #fee2e2; }
+    
+    .sticky-col-last { position: sticky; right: 0; z-index: 12; background: #fff; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
+    .table-header-cell.sticky-col-last { z-index: 15; }
     `}
   </style>
 )
 
 // =====================================================================
-// 2. COMPONENTS
+// 2. COMPONENTS CON
 // =====================================================================
+
 const PageHeader = ({ onImportClick, onAddClick }) => (
   <div className="page-header">
     <div className="page-title">Ca làm việc</div>
@@ -174,16 +119,11 @@ const PageHeader = ({ onImportClick, onAddClick }) => (
   </div>
 )
 
-// --- COMPONENT BỘ LỌC NÂNG CAO (ĐÃ CẬP NHẬT) ---
 const AdvancedFilterPopup = ({ visible, onClose, onApply, columns }) => {
   const [checkedColumns, setCheckedColumns] = useState({});
   const [columnSearchValues, setColumnSearchValues] = useState({});
-
   if (!visible) return null;
-
   const handleCheckColumn = (key) => setCheckedColumns(p => ({ ...p, [key]: !p[key] }));
-
-  // Xử lý nút Áp dụng: Chỉ lấy những cột ĐƯỢC CHECK và CÓ GIÁ TRỊ
   const handleApply = () => {
     const activeFilters = {};
     Object.keys(checkedColumns).forEach(key => {
@@ -194,46 +134,21 @@ const AdvancedFilterPopup = ({ visible, onClose, onApply, columns }) => {
     onApply(activeFilters);
     onClose();
   };
-
-  // Xử lý nút Bỏ lọc: Reset toàn bộ
-  const handleClear = () => {
-    setCheckedColumns({});
-    setColumnSearchValues({});
-    onApply({}); // Gửi object rỗng để reset bảng
-    onClose();
-  };
-
+  const handleClear = () => { setCheckedColumns({}); setColumnSearchValues({}); onApply({}); onClose(); };
   return (
     <div className="popup-container filter-popup">
-      <div className="popup-header">
-        <h5 className="popup-title">Bộ lọc nâng cao</h5>
-        <CButton color="link" onClick={onClose}><CIcon icon={cilX} /></CButton>
-      </div>
+      <div className="popup-header"><h5 className="popup-title">Bộ lọc nâng cao</h5><CButton color="link" onClick={onClose}><CIcon icon={cilX} /></CButton></div>
       <div className="popup-body">
         {columns.filter(c => c.key !== 'checkbox' && c.visible).map(col => (
           <div key={col.key} className="mb-2">
-            <CFormCheck
-              label={col.label}
-              checked={!!checkedColumns[col.key]}
-              onChange={() => handleCheckColumn(col.key)}
-            />
+            <CFormCheck label={col.label} checked={!!checkedColumns[col.key]} onChange={() => handleCheckColumn(col.key)} />
             {checkedColumns[col.key] && (
-              <CFormInput
-                size="sm"
-                className="mt-1 ms-4"
-                placeholder={`Lọc ${col.label}...`}
-                value={columnSearchValues[col.key] || ''}
-                onChange={e => setColumnSearchValues(p => ({ ...p, [col.key]: e.target.value }))}
-              />
+              <CFormInput size="sm" className="mt-1 ms-4" placeholder={`Lọc ${col.label}...`} value={columnSearchValues[col.key] || ''} onChange={e => setColumnSearchValues(p => ({ ...p, [col.key]: e.target.value }))} />
             )}
           </div>
         ))}
       </div>
-      {/* FOOTER CÓ 2 NÚT: BỎ LỌC & ÁP DỤNG */}
-      <div className="popup-footer">
-        <CButton color="light" size="sm" onClick={handleClear}>Bỏ lọc</CButton>
-        <CButton size="sm" className="btn-orange text-white" onClick={handleApply}>Áp dụng</CButton>
-      </div>
+      <div className="popup-footer"><CButton color="light" size="sm" onClick={handleClear}>Bỏ lọc</CButton><CButton size="sm" className="btn-orange text-white" onClick={handleApply}>Áp dụng</CButton></div>
     </div>
   );
 };
@@ -244,7 +159,17 @@ const ColumnSettingsPopup = ({ visible, onClose, columns, onUpdateColumns, onRes
   if (!visible) return null;
   const toggleCol = (key) => setTempColumns(prev => prev.map(c => c.key === key ? { ...c, visible: !c.visible } : c));
   const handleSave = () => { onUpdateColumns(tempColumns); onClose(); };
-  return (<div className="popup-container settings-popup"><div className="popup-header"><h5 className="popup-title">Tùy chỉnh cột</h5><CButton color="link" onClick={onClose}><CIcon icon={cilX} /></CButton></div><div className="popup-body">{tempColumns.map(col => col.key !== 'checkbox' && (<div key={col.key} className="col-setting-item"><CFormCheck label={col.label} checked={col.visible} onChange={() => toggleCol(col.key)} /></div>))}</div><div className="popup-footer"><CButton color="light" size="sm" onClick={() => { onResetDefault(); onClose(); }}>Mặc định</CButton><CButton size="sm" className="btn-orange text-white" onClick={handleSave}>Lưu</CButton></div></div>)
+  return (
+    <div className="popup-container settings-popup">
+      <div className="popup-header"><h5 className="popup-title">Tùy chỉnh cột</h5><CButton color="link" onClick={onClose}><CIcon icon={cilX} /></CButton></div>
+      <div className="popup-body">
+        {tempColumns.map(col => col.key !== 'checkbox' && (
+          <div key={col.key} className="col-setting-item"><CFormCheck label={col.label} checked={col.visible} onChange={() => toggleCol(col.key)} /></div>
+        ))}
+      </div>
+      <div className="popup-footer"><CButton color="light" size="sm" onClick={() => { onResetDefault(); onClose(); }}>Mặc định</CButton><CButton size="sm" className="btn-orange text-white" onClick={handleSave}>Lưu</CButton></div>
+    </div>
+  )
 }
 
 const FilterBar = ({ filters, onFilterChange, onExportExcel, onApplyAdvancedFilter, columns, onUpdateColumns, onResetDefaultColumns }) => {
@@ -252,39 +177,47 @@ const FilterBar = ({ filters, onFilterChange, onExportExcel, onApplyAdvancedFilt
   const [showSettingsPopup, setShowSettingsPopup] = useState(false);
   return (
     <div className="filter-bar">
-      <div className="filter-left"><CInputGroup className="search-bar"><CInputGroupText className="bg-white border-end-0 text-secondary"><CIcon icon={cilSearch} size="sm" /></CInputGroupText><CFormInput className="border-start-0 ps-0" placeholder="Tìm kiếm chung" value={filters.search} onChange={(e) => onFilterChange((prev) => ({ ...prev, search: e.target.value }))} size="sm" /></CInputGroup></div>
+      <div className="filter-left">
+        <CInputGroup className="search-bar">
+          <CInputGroupText className="bg-white border-end-0 text-secondary"><CIcon icon={cilSearch} size="sm" /></CInputGroupText>
+          <CFormInput className="border-start-0 ps-0" placeholder="Tìm kiếm chung" value={filters.search} onChange={(e) => onFilterChange((prev) => ({ ...prev, search: e.target.value }))} size="sm" />
+        </CInputGroup>
+      </div>
       <div className="filter-right" style={{ position: 'relative' }}>
-        <span className="text-muted fs-6" style={{ fontSize: '0.9rem' }}>Trạng thái</span>
-        <CDropdown><CDropdownToggle color="transparent" className="fw-bold fs-6" size="sm">Tất cả</CDropdownToggle><CDropdownMenu><CDropdownItem>Tất cả</CDropdownItem><CDropdownItem>Đang áp dụng</CDropdownItem><CDropdownItem>Ngừng áp dụng</CDropdownItem></CDropdownMenu></CDropdown>
-        <div className="vr mx-2"></div>
-        <CDropdown><CDropdownToggle variant="outline" color="secondary" size="sm" className="bg-white text-dark border-secondary">Tất cả đơn vị</CDropdownToggle><CDropdownMenu><CDropdownItem>Tất cả đơn vị</CDropdownItem><CDropdownItem>Văn phòng Hà Nội</CDropdownItem><CDropdownItem>Nhà máy Bắc Ninh</CDropdownItem></CDropdownMenu></CDropdown>
-
         <CTooltip content="Xuất Excel">
           <CButton variant="outline" color="dark" size="sm" className="btn-icon-only" onClick={onExportExcel}>
             Xuất Excel
           </CButton>
         </CTooltip>
-
-        <div style={{ position: 'relative', display: 'inline-block' }}><CTooltip content="Bộ lọc"><CButton variant="outline" color="dark" size="sm" className="btn-icon-only" onClick={() => { setShowFilterPopup(!showFilterPopup); setShowSettingsPopup(false); }} active={showFilterPopup}><CIcon icon={cilFilter} /></CButton></CTooltip><AdvancedFilterPopup visible={showFilterPopup} onClose={() => setShowFilterPopup(false)} onApply={onApplyAdvancedFilter} columns={columns} /></div>
-        <div style={{ position: 'relative', display: 'inline-block' }}><CTooltip content="Cài đặt cột"><CButton variant="outline" color="dark" size="sm" className="btn-icon-only" onClick={() => { setShowSettingsPopup(!showSettingsPopup); setShowFilterPopup(false); }} active={showSettingsPopup}><CIcon icon={cilSettings} /></CButton></CTooltip><ColumnSettingsPopup visible={showSettingsPopup} onClose={() => setShowSettingsPopup(false)} columns={columns} onUpdateColumns={onUpdateColumns} onResetDefault={onResetDefaultColumns} /></div>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <CTooltip content="Bộ lọc">
+            <CButton variant="outline" color="dark" size="sm" className="btn-icon-only" onClick={() => { setShowFilterPopup(!showFilterPopup); setShowSettingsPopup(false); }} active={showFilterPopup}><CIcon icon={cilFilter} /></CButton>
+          </CTooltip>
+          <AdvancedFilterPopup visible={showFilterPopup} onClose={() => setShowFilterPopup(false)} onApply={onApplyAdvancedFilter} columns={columns} />
+        </div>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <CTooltip content="Cài đặt cột">
+            <CButton variant="outline" color="dark" size="sm" className="btn-icon-only" onClick={() => { setShowSettingsPopup(!showSettingsPopup); setShowFilterPopup(false); }} active={showSettingsPopup}><CIcon icon={cilSettings} /></CButton>
+          </CTooltip>
+          <ColumnSettingsPopup visible={showSettingsPopup} onClose={() => setShowSettingsPopup(false)} columns={columns} onUpdateColumns={onUpdateColumns} onResetDefault={onResetDefaultColumns} />
+        </div>
       </div>
     </div>
   )
 }
 
-const PageTable = ({ data, columns }) => {
+// Update: onDelete nhận vào toàn bộ item để lấy mã ca hiển thị lên modal
+const PageTable = ({ data, columns, onDelete, onEdit }) => {
   const visibleColumns = columns.filter(col => col.visible);
   return (
     <div className="table-wrapper-fullscreen">
-      <CTable hover className="mb-0" align="middle" style={{ minWidth: '1600px' }}>
+      <CTable hover className="mb-0" align="middle" style={{ minWidth: '1400px' }}>
         <CTableHead>
           <CTableRow>
             {visibleColumns.map((col) => {
               let className = "table-header-cell";
               if (col.align) className += ` text-${col.align}`;
-              if (col.key === 'actions') {
-                className += " sticky-col-last"
-              }
+              if (col.key === 'actions') className += " sticky-col-last";
               return (<CTableHeaderCell key={col.key} className={className} style={{ width: col.width }}>{col.type === 'checkbox' ? <div className="text-center"><CFormCheck /></div> : col.label}</CTableHeaderCell>);
             })}
           </CTableRow>
@@ -294,58 +227,36 @@ const PageTable = ({ data, columns }) => {
             data.map((item) => (
               <CTableRow key={item.id}>
                 {visibleColumns.map((col) => {
-
                   let className = "";
                   if (col.align) className += ` text-${col.align}`;
 
-                  // ✅ CỘT ACTIONS
+                  // CỘT ACTIONS
                   if (col.key === 'actions') {
                     return (
-                      <CTableDataCell
-                        key={`${item.id}-${col.key}`}
-                        className="sticky-col-last"
-                      >
+                      <CTableDataCell key={`${item.id}-${col.key}`} className="sticky-col-last">
                         <div className="row-actions">
-
                           <CTooltip content="Chỉnh sửa">
-                            <button className="btn-action edit" onClick={() => console.log('Edit', item)}>
-                              <CIcon icon={cilPencil} />
-                            </button>
+                            <button className="btn-action edit" onClick={() => onEdit(item)}><CIcon icon={cilPencil} /></button>
                           </CTooltip>
-
                           <CTooltip content="Xóa">
-                            <button className="btn-action delete" onClick={() => console.log('Delete', item)}>
-                              <CIcon icon={cilTrash} />
-                            </button>
+                            {/* Chuyền cả item vào onDelete để lấy mã ca hiển thị */}
+                            <button className="btn-action delete" onClick={() => onDelete(item)}><CIcon icon={cilTrash} /></button>
                           </CTooltip>
-
                         </div>
                       </CTableDataCell>
                     );
                   }
 
-                  // ✅ CỘT CHECKBOX
+                  // CỘT CHECKBOX
                   if (col.type === 'checkbox') {
-                    return (
-                      <CTableDataCell
-                        key={`${item.id}-${col.key}`}
-                        className="text-center"
-                      >
-                        <CFormCheck />
-                      </CTableDataCell>
-                    );
+                    return (<CTableDataCell key={`${item.id}-${col.key}`} className="text-center"><CFormCheck /></CTableDataCell>);
                   }
 
-                  // ✅ CÁC CỘT BÌNH THƯỜNG
+                  // CỘT DỮ LIỆU
                   const content = item[col.key];
-
                   return (
-                    <CTableDataCell
-                      key={`${item.id}-${col.key}`}
-                      className={className}
-                      style={{ fontSize: '0.9rem', color: '#333' }}
-                    >
-                      {content}
+                    <CTableDataCell key={`${item.id}-${col.key}`} className={className} style={{ fontSize: '0.9rem', color: '#333' }}>
+                      {content !== undefined && content !== null ? content : '-'}
                     </CTableDataCell>
                   )
                 })}
@@ -358,12 +269,6 @@ const PageTable = ({ data, columns }) => {
   )
 }
 
-const MOCK_DATA = [
-  { id: 1, shift_code: 'abc123', shift_name: 'ABC', applied_unit: 'Tất cả đơn vị', start_time: '08:00', check_in_from: '07:00', check_in_to: '08:00', end_time: '08:30', check_out_from: '08:30', check_out_to: '09:00' },
-  { id: 2, shift_code: 'HC', shift_name: 'Ca hành chính', applied_unit: 'Tất cả đơn vị', start_time: '08:00', check_in_from: '07:00', check_in_to: '09:00', end_time: '17:30', check_out_from: '16:30', check_out_to: '18:30' },
-  { id: 3, shift_code: 'TC1', shift_name: 'tăng ca', applied_unit: 'Tất cả đơn vị', start_time: '08:00', check_in_from: '07:00', check_in_to: '09:00', end_time: '17:30', check_out_from: '16:30', check_out_to: '18:30' },
-]
-
 // =====================================================================
 // 5. MAIN
 // =====================================================================
@@ -372,33 +277,90 @@ const ShiftScheduleShow = () => {
   const [loading, setLoading] = useState(true)
   const [columns, setColumns] = useState(DEFAULT_COLUMNS)
   const [filters, setFilters] = useState({ search: '', columnFilters: {} })
+  
+  // States cho Import
   const [visibleImportModal, setVisibleImportModal] = useState(false)
   const [importFile, setImportFile] = useState(null)
+  
+  // States cho Delete Modal
+  const [visibleDeleteModal, setVisibleDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
   const fileInputRef = useRef(null)
   const navigate = useNavigate();
 
-  useEffect(() => { setTimeout(() => { setData(MOCK_DATA); setLoading(false); }, 300); }, []);
+  // --- FETCH DATA ---
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await shiftscheduleApi.getAll();
+      const rawData = response.data?.data || response.data || []; 
+
+      if (Array.isArray(rawData)) {
+        const mappedData = rawData.map(item => ({
+            ...item, 
+            id: item.shiftId, 
+            overtimeLabel: item.overtimeEligible ? "Có" : "Không",
+            payType: item.payType === 'hourly' ? 'Theo giờ' : (item.payType === 'fixed' ? 'Cố định' : item.payType)
+        }));
+        setData(mappedData);
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy dữ liệu:", error);
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Import Logic
   const handleFileSelect = (e) => { const file = e.target.files[0]; if (file) setImportFile(file); }
   const triggerFileSelect = () => fileInputRef.current.click();
   const handleConfirmImport = () => { if (!importFile) return; setVisibleImportModal(false); alert("Import thành công!"); }
 
-  // --- LOGIC LỌC DỮ LIỆU ĐƯỢC CẬP NHẬT ---
+  // --- DELETE LOGIC (MỚI) ---
+  const handleOpenDeleteModal = (item) => {
+    setItemToDelete(item);
+    setVisibleDeleteModal(true);
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+        await shiftscheduleApi.delete(itemToDelete.id); // Dùng ID để xóa
+        alert("Xóa thành công!");
+        fetchData(); // Load lại dữ liệu
+    } catch (e) {
+        console.error(e);
+        alert("Xóa thất bại!");
+    } finally {
+        setVisibleDeleteModal(false);
+        setItemToDelete(null);
+    }
+  }
+
+  // --- EDIT LOGIC (MỚI) ---
+  const handleEdit = (item) => {
+      // Điều hướng sang trang update kèm theo ID của ca làm việc
+      navigate(`/timesheet/shiftscheduleShow/update/${item.id}`);
+  }
+
   const filteredData = useMemo(() => {
     return data.filter(item => {
-      // 1. Tìm kiếm chung (Search Box)
       const search = filters.search.toLowerCase();
       const matchSearch = !search || Object.values(item).some(v => String(v).toLowerCase().includes(search));
-
-      // 2. Tìm kiếm nâng cao (Filter Popup)
-      // Kiểm tra tất cả các cột đang được lọc
       const columnFilters = filters.columnFilters || {};
       const matchColumns = Object.keys(columnFilters).every(key => {
         const filterVal = columnFilters[key].toLowerCase();
         const itemVal = String(item[key] || '').toLowerCase();
         return itemVal.includes(filterVal);
       });
-
-      // Kết hợp cả 2 điều kiện
       return matchSearch && matchColumns;
     });
   }, [data, filters]);
@@ -425,10 +387,7 @@ const ShiftScheduleShow = () => {
     link.click();
     document.body.removeChild(link);
   };
-
-  const handleAddNew = () => {
-    navigate('/timesheet/shiftscheduleShow/add');
-  }
+  const handleAddNew = () => { navigate('/timesheet/shiftscheduleShow/add'); }
 
   if (loading) return <div className="d-flex justify-content-center p-5"><CSpinner color="warning" /></div>
 
@@ -447,9 +406,15 @@ const ShiftScheduleShow = () => {
           onApplyAdvancedFilter={(cf) => setFilters(p => ({ ...p, columnFilters: cf }))}
           columns={columns} onUpdateColumns={setColumns} onResetDefaultColumns={() => setColumns(DEFAULT_COLUMNS)}
         />
-        <PageTable data={filteredData} columns={columns} />
+        <PageTable 
+            data={filteredData} 
+            columns={columns} 
+            onDelete={handleOpenDeleteModal} // Truyền hàm mở Modal
+            onEdit={handleEdit} // Truyền hàm Edit
+        />
       </div>
 
+      {/* --- IMPORT MODAL --- */}
       <CModal alignment="center" size="lg" visible={visibleImportModal} onClose={() => setVisibleImportModal(false)}>
         <CModalHeader><CModalTitle className="fw-bold fs-5">Nhập khẩu ca làm việc</CModalTitle></CModalHeader>
         <CModalBody>
@@ -460,6 +425,33 @@ const ShiftScheduleShow = () => {
           <div className="text-center"><a href="#" className="link-orange" style={{ color: '#ea580c', textDecoration: 'none', fontWeight: 600 }}>Tải xuống tệp mẫu</a></div>
         </CModalBody>
         <CModalFooter className="bg-light border-top-0"><CButton color="white" className="border" onClick={() => setVisibleImportModal(false)}>Hủy</CButton><CButton className="btn-orange text-white" onClick={handleConfirmImport}>Tiếp theo</CButton></CModalFooter>
+      </CModal>
+
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      <CModal alignment="center" visible={visibleDeleteModal} onClose={() => setVisibleDeleteModal(false)}>
+        <CModalHeader closeButton>
+          <CModalTitle className="fw-bold text-danger">
+             <CIcon icon={cilWarning} className="me-2" />
+             Xác nhận xóa
+          </CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          {itemToDelete && (
+             <span>
+                Bạn có chắc chắn muốn xóa ca có mã <strong>{itemToDelete.code}</strong> không? 
+                <br/>
+                <small className="text-muted">Hành động này không thể hoàn tác.</small>
+             </span>
+          )}
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setVisibleDeleteModal(false)}>
+            Hủy bỏ
+          </CButton>
+          <CButton color="danger" className="text-white" onClick={handleConfirmDelete}>
+            Đồng ý xóa
+          </CButton>
+        </CModalFooter>
       </CModal>
     </>
   )

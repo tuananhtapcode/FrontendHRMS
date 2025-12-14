@@ -1,3 +1,4 @@
+
 import { cilArrowBottom, cilCheckAlt } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import {
@@ -16,11 +17,17 @@ const StatCard = ({ variant, icon, title, initialFilter, children }) => {
   const handleSelect = (filter) => {
     setSelectedFilter(filter);
     // TODO: Sau này bạn có thể gọi API tải lại dữ liệu ở đây
-    // Ví dụ: onFilterChange(filter)
   };
 
   return (
     <div className={cardClassName}>
+      
+      {/* --- PHẦN MỚI: Lớp chứa background để cắt sóng --- */}
+      <div className="stat-card-bg-container">
+        <div className="wave-background"></div>
+      </div>
+      {/* ----------------------------------------------- */}
+
       <div className="stat-card-left">
         <div className="stat-card-header">
           <span>{title}</span>
@@ -48,7 +55,8 @@ const StatCard = ({ variant, icon, title, initialFilter, children }) => {
         <div className="stat-card-body">{children}</div>
       </div>
       <div className="stat-card-right">{icon}</div>
-      <div className="wave-background"></div> {/* Hiệu ứng sóng lượn */}
+      
+      {/* (Đã xóa div wave-background ở đây vì chuyển lên trên rồi) */}
     </div>
   );
 };
