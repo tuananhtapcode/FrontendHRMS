@@ -31,7 +31,30 @@ const createEmployees = async (
     throw error
   }
 }
-
+const updateEmployees = async (
+  id,
+  employeeCode,
+  fullName,
+  email,
+  phoneNumber,
+  departmentId,
+  jobPositionId,
+) => {
+  try {
+    const res = await api.put(`/api/v1/employees/${id}`, {
+      employeeCode,
+      fullName,
+      email,
+      phoneNumber,
+      departmentId,
+      jobPositionId,
+      roleId: 3,
+    })
+    return res
+  } catch (error) {
+    throw error
+  }
+}
 const getEmployees = async (page, size) => {
   try {
     const res = await api.get('/api/v1/employees/search', { params: { page, size } })
@@ -261,6 +284,7 @@ export {
   getEmployeesStats,
   /// EMPLOYEES
   createEmployees,
+  updateEmployees,
   getEmployees,
   getEmployeeById,
   exportEmployees,

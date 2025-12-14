@@ -23,19 +23,20 @@ import {
   getActiveJobPositions,
   getDepartments,
   getEmployees,
+  updateEmployees,
 } from '../api/api'
 
 const ProfileView = () => {
-  const formRef = useRef()
+  const formRef = useRef(null)
+  const tableRef = useRef(null)
 
   const [isUpdate, setIsUpdate] = useState(false)
+  const [employeeId, setEmployeeId] = useState(null)
   const [visible, setVisible] = useState(false)
   const [jobPositions, setJobPositions] = useState([])
   const [departments, setDeparments] = useState([])
   const [formData, setFormData] = useState({
     employeeCode: '',
-    lastName: '',
-    firstName: '',
     fullName: '',
     email: '',
     phoneNumber: '',
@@ -74,10 +75,6 @@ const ProfileView = () => {
     fetchData()
   }, [])
 
-  useEffect(() => {
-    handleChange('fullName', formData.lastName + ' ' + formData.firstName)
-  }, [formData.firstName, formData.lastName])
-
   const handleChange = (field, value) => {
     setFormData((prev) => {
       if (prev[field] === value) return prev
@@ -90,8 +87,6 @@ const ProfileView = () => {
     setVisible(true)
     setFormData({
       employeeCode: '',
-      lastName: '',
-      firstName: '',
       fullName: '',
       email: '',
       phoneNumber: '',
@@ -128,7 +123,38 @@ const ProfileView = () => {
       console.error(error)
     }
   }
-
+  const onUpdate = (employee) => {
+    setIsUpdate(true)
+    setVisible(true)
+    setEmployeeId(employee.employeeId)
+    setFormData({
+      employeeCode: employee.employeeCode,
+      fullName: employee.fullName,
+      email: employee.email,
+      phoneNumber: employee.phoneNumber,
+      departmentId: employee.departmentId,
+      jobPositionId: employee.jobPositionId,
+    })
+  }
+  const handleUpdate = async () => {
+    try {
+      await updateEmployees(
+        employeeId,
+        formData.employeeCode,
+        formData.fullName,
+        formData.email,
+        formData.phoneNumber,
+        formData.departmentId,
+        formData.jobPositionId,
+      )
+      setVisible(false)
+      tableRef.current?.reload()
+    } catch (error) {
+      const message = error.response?.data || 'Có lỗi xảy ra'
+      alert(message)
+      console.error(error)
+    }
+  }
   return (
     <>
       <CRow className="mb-3 align-items-center">
@@ -147,7 +173,13 @@ const ProfileView = () => {
           </CButton>
         </CCol>
       </CRow>
-      <SearchableTable columns={employeeColumns} getAPI={getEmployees} limit={10} />
+      <SearchableTable
+        ref={tableRef}
+        columns={employeeColumns}
+        getAPI={getEmployees}
+        limit={10}
+        onUpdate={onUpdate}
+      />
 
       <CModal alignment="center" backdrop="static" visible={visible} onClose={handleCancel}>
         <CModalHeader>
@@ -175,46 +207,16 @@ const ProfileView = () => {
                       required
                     />
                   </CCol>
-
-                  <CCol md={6}>
-                    <CFormInput
-                      id="inputLastName"
-                      label={
-                        <>
-                          Họ và đệm <span style={{ color: 'red' }}>*</span>
-                        </>
-                      }
-                      placeholder="Nhập họ và đệm"
-                      value={formData.lastName}
-                      onChange={(e) => handleChange('lastName', e.target.value)}
-                      required
-                    />
-                  </CCol>
-
-                  <CCol md={6}>
-                    <CFormInput
-                      id="inputFirstName"
-                      label={
-                        <>
-                          Tên <span style={{ color: 'red' }}>*</span>
-                        </>
-                      }
-                      placeholder="Nhập tên"
-                      value={formData.firstName}
-                      onChange={(e) => handleChange('firstName', e.target.value)}
-                      required
-                    />
-                  </CCol>
-
                   <CCol md={12}>
                     <CFormInput
-                      value={formData.fullName}
                       id="inputFullName"
                       label="Họ và tên"
-                      disabled
+                      value={formData.fullName}
+                      placeholder="Nhập họ và tên"
+                      required
+                      onChange={(e) => handleChange('fullName', e.target.value)}
                     />
                   </CCol>
-
                   <CCol md={12}>
                     <CFormInput
                       id="inputPhoneNumber"
@@ -224,7 +226,6 @@ const ProfileView = () => {
                       onChange={(e) => handleChange('phoneNumber', e.target.value)}
                     />
                   </CCol>
-
                   <CCol md={12}>
                     <CFormInput
                       id="inputPersonalEmail"
@@ -238,7 +239,6 @@ const ProfileView = () => {
                       feedbackInvalid="Email không hợp lệ"
                     />
                   </CCol>
-
                   <CCol md={12}>
                     <CFormSelect label="Chọn nhân viên">
                       {departments.map((d, i) => (
@@ -252,7 +252,6 @@ const ProfileView = () => {
                       ))}
                     </CFormSelect>
                   </CCol>
-
                   <CCol md={12}>
                     <CFormSelect label="Chọn nhân viên">
                       {jobPositions.map((j, i) => (
