@@ -1,3 +1,775 @@
+// @use "sass:color";
+
+// /* ===== Palette & tokens (chuẩn theo UI gốc) ===== */
+// $bg-app:        #f5f7f8;   // nền toàn trang
+// $bg-card:       #ffffff;   // panel/card
+// $bg-header:     #f7f8f9;   // header panel
+// $border-soft:   #e6e7e9;   // viền mảnh
+// $border-dashed: #e9edef;   // viền dashed empty
+// $text-1:        #1f2d3d;   // title
+// $text-2:        #516174;   // mô tả
+// $text-3:        #8a98a9;   // phụ
+// $accent:        #2eb85c;   // xanh chủ đạo (CoreUI success)
+// $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
+
+// /* ===== Trang tổng quan tiền lương ===== */
+// .payroll-ovw {
+//   background: $bg-app;   
+//   padding: 12px 12px 24px;
+
+//   /* Tabs trên cùng */
+//   .ovw-tabs {
+//     margin-bottom: 12px;
+
+//     .nav-tabs {
+//       border-bottom: 0;
+//       gap: 8px;
+//     }
+
+//     .nav-link {
+//       border: 1px solid $border-soft !important;
+//       background: $bg-card;
+//       color: $text-1;
+//       border-radius: 8px;
+//       padding: 6px 12px;
+//       line-height: 1.1;
+//       box-shadow: $shadow-sm;
+
+//       &.active {
+//         border-color: color.scale($accent, $lightness: 28%) !important;
+//         background: rgba($accent, 0.08);
+//         color: color.scale($accent, $lightness: -10%);
+//         font-weight: 600;
+//       }
+//     }
+//   }
+
+//   /* Cards KPI đầu trang */
+//   .summary-card {
+//     background: $bg-card;
+//     border: 1px solid $border-soft;
+//     border-radius: 12px;
+//     box-shadow: $shadow-sm;
+
+//     /* NEW: cho card full height & layout đẹp hơn */
+//     height: 100%;
+//     display: flex;
+//     flex-direction: column;
+//     justify-content: space-between;
+
+//     .text-medium-emphasis { color: $text-2; }
+//     .text-secondary { color: $text-3 !important; }
+//     .fs-4 { font-size: 18px !important; }
+//   }
+// /* ==== CƠ CẤU QUỸ LƯƠNG – LEGEND BUTTON ==== */
+//   .fund-card {
+//     display: flex;
+//     align-items: stretch;
+//     gap: 16px;
+//   }
+
+//   .fund-card-left {
+//     flex: 0 0 280px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//   }
+
+//   .fund-card-right {
+//     flex: 1;
+//     display: flex;
+//     flex-direction: column;
+//     gap: 8px;
+//     font-size: 13px;
+//   }
+
+//   .fund-card-donut {
+//     position: relative;
+//     width: 100%;
+//   }
+
+//   .fund-card-center {
+//     position: absolute;
+//     inset: 0;
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     justify-content: center;
+//     pointer-events: none;
+
+//     .label {
+//       font-size: 12px;
+//       color: $text-3;
+//       margin-bottom: 2px;
+//     }
+
+//     .value {
+//       font-size: 18px;
+//       font-weight: 600;
+//       color: $text-1;
+//     }
+//   }
+
+//   /* Legend items là button nên override style default */
+//   .fund-card-legend {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 4px;
+//   }
+
+//   .fund-card-legend-item {
+//     width: 100%;
+//     display: flex;
+//     align-items: center;
+//     justify-content: space-between;
+//     gap: 8px;
+
+//     border: 0;
+//     background: transparent;
+//     padding: 4px 8px;
+//     border-radius: 8px;
+//     cursor: pointer;
+
+//     /* Tắt outline xanh mặc định */
+//     outline: none;
+//   }
+
+//   /* Nếu focus bằng bàn phím thì có thể dùng box-shadow nhẹ (hoặc bỏ luôn) */
+//   .fund-card-legend-item:focus-visible {
+//     outline: none;
+//     box-shadow: 0 0 0 1px rgba($accent, 0.4);
+//   }
+
+//   .fund-card-legend-item.is-active {
+//     background: rgba($accent, 0.06);
+//   }
+
+//   .fund-card-legend-item .dot {
+//     width: 10px;
+//     height: 10px;
+//     border-radius: 4px;
+//     flex-shrink: 0;
+//   }
+
+//   .fund-card-legend-item .name {
+//     flex: 1;
+//     text-align: left;
+//     color: $text-2;
+//   }
+
+//   .fund-card-legend-item .value {
+//     white-space: nowrap;
+//     color: $text-3;
+//     font-size: 12px;
+//   }
+
+//   .fund-card-legend-item .percent {
+//     margin-left: 4px;
+//   }
+
+//   .fund-card-active {
+//     font-size: 12px;
+//     color: $text-2;
+//   }
+
+//   .fund-card-hint {
+//     font-size: 12px;
+//     color: $text-3;
+//     font-style: italic;
+//   }
+
+//   /* Phòng trường hợp focus dính vào wrapper nào trong donut */
+//   .fund-card-left :focus {
+//     outline: none;
+//   }
+
+
+//     /* ===== Card Kỳ lương hiện tại ===== */
+//   .period-card {
+//     display: flex;
+//     gap: 16px;
+//     align-items: stretch;
+//     min-height: 220px;
+//   }
+
+//   .period-card-chart {
+//     flex: 0 0 40%;   // chart ~40%, info ~60%
+//     display: flex;
+//     align-items: center;
+//   }
+
+//   .period-card-chart-inner {
+//     width: 100%;
+//     // nền trắng, border nhẹ để tách khỏi info
+//     background: #ffffff;
+//     border-radius: 8px;
+//     padding: 4px 8px 8px;
+//   }
+
+//   // Tắt mọi outline xanh bên trong chart
+//   .period-card-chart-inner *:focus,
+//   .period-card-chart-inner *:focus-visible {
+//     outline: none !important;
+//   }
+
+//   .period-card-chart-empty {
+//     font-size: 13px;
+//     color: $text-3;
+//     text-align: center;
+//   }
+
+//   .period-bar-summary {
+//     margin-top: 4px;
+//     font-size: 13px;
+//     color: $text-2;
+
+//     .title {
+//       font-weight: 600;
+//       color: $text-1;
+//       margin-bottom: 2px;
+//     }
+
+//     .line {
+//       display: flex;
+//       flex-wrap: wrap;
+//       gap: 4px 8px;
+//       align-items: baseline;
+//     }
+
+//     .value {
+//       font-weight: 600;
+//       color: $text-1;
+//     }
+
+//     .percent {
+//       color: $text-3;
+//     }
+//   }
+
+//     .period-card-info {
+//     flex: 1;
+//     display: flex;
+//     flex-direction: column;
+//     gap: 6px;
+//     font-size: 13px;
+//     padding-left: 100px;   // NEW: đẩy cả khối info sang phải
+//   }
+
+//   .period-card-header {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+//     margin-bottom: 6px;
+//   }
+
+//   .period-card-name {
+//     font-weight: 600;
+//     color: $text-1;
+//     font-size: 15px;      // to hơn xíu cho rõ
+//     margin-left: 4px;     // NEW: dịch riêng tiêu đề sang phải 1 chút
+//   }
+
+//     .period-card-status {
+//     padding: 2px 10px;
+//     border-radius: 999px;
+//     font-size: 15px;
+//     font-weight: 500;
+//     border: 1px solid transparent;
+//     display: inline-flex;
+//     align-items: center;
+//     gap: 4px;
+//     line-height: 1;
+//     white-space: nowrap;
+//   }
+
+//   .period-card-status.status-approved {
+//     background: rgba($accent, 0.12);
+//     color: $accent;
+//     border-color: rgba($accent, 0.4);
+//     box-shadow: 0 0 0 1px rgba($accent, 0.16);
+//   }
+
+//   .period-card-status.status-approved::before {
+//     content: '✓';
+//     font-size: 10px;
+//     font-weight: 700;
+//   }
+
+//   .period-card-status.status-pending {
+//     background: #fff4e5;
+//     color: #f59e0b;
+//     border-color: #fed7aa;
+//   }
+
+
+//   .period-card-row {
+//     display: flex;
+//     gap: 6px;
+//     line-height: 1.4;
+
+//     .label {
+//       min-width: 120px;
+//       color: $text-3;
+//     }
+
+//     .value {
+//       color: $text-2;
+//       flex: 1;
+
+//       &.strong {
+//         font-weight: 600;
+//         color: $text-1;
+//       }
+//     }
+//   }
+
+//   .period-card-actions {
+//     margin-top: auto;
+//     display: flex;
+//     justify-content: flex-end;
+//   }
+
+//   @media (max-width: 991px) {
+//     .period-card {
+//       flex-direction: column;
+//     }
+
+//     .period-card-chart {
+//       flex: 0 0 auto;
+//     }
+//   }
+
+
+//     /* ===== RemindersCard (class đúng theo component) ===== */
+//   .ovw-reminders { display: grid; gap: 10px; }
+
+//   .rem-item {
+//     display: flex;
+//     gap: 10px;
+//     align-items: flex-start;
+//   }
+
+//   .rem-item--interactive {
+//     border-radius: 10px;
+//     padding: 6px 4px;
+//     transition: background .12s ease, transform .12s ease;
+//     &:hover { background: #f8fafc; transform: translateY(-1px); }
+//   }
+
+//   .rem-body { flex: 1; min-width: 0; }
+
+//   .rem-title { font-size: 13px; font-weight: 600; color: $text-1; }
+//   .rem-desc  { font-size: 12px; color: $text-3; }
+
+//   /* ✅ map đúng dotClass rem-dot--color */
+//   .rem-dot {
+//     width: 10px; height: 10px; border-radius: 999px;
+//     margin-top: 6px; background: #6c757d;
+//   }
+//   .rem-dot--warning { background: #f9b115 !important; }
+//   .rem-dot--info    { background: #39a8ff !important; }
+//   .rem-dot--success { background: $accent !important; }
+//   .rem-dot--danger  { background: #e55353 !important; }
+
+//   /* skeleton nhanh gọn */
+//   .rem-item--skeleton {
+//     .skeleton-block {
+//       height: 10px;
+//       border-radius: 6px;
+//       background: linear-gradient(90deg, #f3f4f6, #e5e7eb, #f3f4f6);
+//       background-size: 200% 100%;
+//       animation: ovw-shimmer 1.2s infinite linear;
+//       margin-top: 3px;
+//     }
+//   }
+//   @keyframes ovw-shimmer {
+//     0% { background-position: 0% 0; }
+//     100% { background-position: -200% 0; }
+//   }
+
+//   /* ===== GuideLinksCard ===== */
+//   .ovw-guide {
+//     padding: 2px 0;
+
+//     &__empty {
+//       border: 1.5px dashed $border-dashed;
+//       border-radius: 12px;
+//       padding: 14px;
+//       background: #fbfcfd;
+//     }
+//     &__empty-title {
+//       font-size: 14px; font-weight: 600; color: $text-1;
+//       margin-bottom: 4px;
+//     }
+//     &__empty-desc {
+//       font-size: 12px; color: $text-3; line-height: 1.4;
+//       margin-bottom: 10px;
+//     }
+
+//     &__list {
+//       display: flex; flex-direction: column; gap: 8px;
+//     }
+//     &__item {
+//       display: block;
+//       padding: 10px 10px;
+//       border-radius: 10px;
+//       text-decoration: none;
+//       border: 1px solid $border-dashed;
+//       background: $bg-card;
+//       transition: .12s ease;
+
+//       &:hover {
+//         background: #f8fafc;
+//         border-color: $border-soft;
+//         transform: translateY(-1px);
+//       }
+//     }
+//     &__item-title {
+//       font-size: 13px; font-weight: 600; color: $text-1;
+//     }
+//     &__item-desc {
+//       font-size: 12px; color: $text-3; margin-top: 2px;
+//     }
+//     &__footer { margin-top: 8px; }
+//   }
+//   /* ===== Budget Card (Combo B) ===== */
+//   .budget-card {
+//     display: grid;
+//     gap: 14px;
+//   }
+
+//   .budget-card__gauge {
+//     /* giữ gauge tách khối trên */
+//   }
+
+//   .budget-card__section {
+//     border-top: 1px solid #eef0f3;
+//     padding-top: 10px;
+//   }
+
+//   .budget-card__title {
+//     font-size: 12px;
+//     font-weight: 600;
+//     color: #1f2d3d;
+//     margin-bottom: 8px;
+//   }
+
+//   .budget-card__list {
+//     display: grid;
+//     gap: 8px;
+//   }
+
+//   .budget-card__row {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+//     padding: 8px 10px;
+//     border: 1px solid #f0f2f5;
+//     border-radius: 10px;
+//     background: #fff;
+
+//   .left {
+//     .label {
+//       font-size: 12px;
+//       font-weight: 600;
+//       color: #1f2d3d;
+//     }
+//     .value {
+//       font-size: 11.5px;
+//       color: #8a98a9;
+//       margin-top: 1px;
+//     }
+//   }
+
+//   .delta {
+//     font-size: 11.5px;
+//     font-weight: 600;
+//     padding: 2px 8px;
+//     border-radius: 999px;
+//     background: #f6f7f9;
+//     color: #516174;
+
+//     &.is-up {
+//       background: rgba(46,184,92,0.08);
+//       color: #2eb85c;
+//     }
+//     &.is-down {
+//       background: rgba(220,53,69,0.08);
+//       color: #dc3545;
+//     }
+//   }
+// }
+
+// .budget-card__forecast {
+//   display: flex;
+//   gap: 12px;
+//   padding: 10px;
+//   border: 1px solid #f0f2f5;
+//   border-radius: 12px;
+
+//   .forecast-left {
+//     min-width: 110px;
+//     display: grid;
+//     gap: 6px;
+//     align-content: start;
+//   }
+
+//   .forecast-big {
+//     font-size: 22px;
+//     font-weight: 700;
+//     color: #1f2d3d;
+//   }
+
+//   .forecast-risk {
+//     font-size: 11px;
+//     font-weight: 600;
+//     display: inline-flex;
+//     padding: 2px 8px;
+//     border-radius: 999px;
+//     width: fit-content;
+
+//     &.risk-low {
+//       background: rgba(46,184,92,0.08);
+//       color: #2eb85c;
+//     }
+//     &.risk-medium {
+//       background: rgba(249,177,21,0.10);
+//       color: #f59e0b;
+//     }
+//     &.risk-high {
+//       background: rgba(220,53,69,0.10);
+//       color: #dc3545;
+//     }
+//   }
+
+//   .forecast-right {
+//     flex: 1;
+//   }
+
+//   .forecast-note {
+//     font-size: 12px;
+//     color: #516174;
+//     margin-bottom: 6px;
+//   }
+
+//   .forecast-hint {
+//     font-size: 11.5px;
+//     color: #8a98a9;
+//   }
+// }
+
+// .budget-card__empty-mini {
+//   font-size: 11.5px;
+//   color: #8a98a9;
+//   font-style: italic;
+// }
+
+// .budget-card__actions {
+//   display: flex;
+//   align-items: center;
+//   gap: 6px;
+//   padding-top: 4px;
+
+//   .dot-sep {
+//     color: #c5ccd6;
+//     font-size: 10px;
+//   }
+// }
+
+
+//   /* Panel (các ô lớn) */
+//   .panel {
+//     margin-bottom: 12px;
+//     border: 1px solid $border-soft !important;
+//     border-radius: 12px !important;
+//     background: $bg-card;
+//     box-shadow: $shadow-sm;
+
+//     .card-header,
+//     .bg-light {
+//       background: $bg-header !important;
+//       border-bottom: 1px solid $border-soft;
+//       padding: 12px 16px;
+//     }
+
+//     .fw-semibold { color: $text-1; font-weight: 600; }
+//     .text-medium-emphasis { color: $text-3 !important; }
+//     .card-body { padding: 14px 16px; }
+//   }
+
+//   /* Empty state */
+//   .empty {
+//     min-height: 150px;
+//     border: 1.5px dashed $border-dashed;
+//     border-radius: 12px;
+//     background: #fbfcfd;
+//     display: grid;
+//     place-items: center;
+//     color: $text-3;
+
+//     .empty-ico { font-size: 26px; margin-bottom: 6px; color: $accent; }
+//     .empty-txt { font-size: 13px; }
+//   }
+
+//   /* Gauge: chữ màu tối, progress xanh */
+//   svg text { fill: $text-1; }
+//   .gauge {
+//     .small { color: $text-2; }
+//   }
+
+//   /* Cột phải – Lời nhắc */
+//   .ovw-reminders { display: grid; gap: 10px; }
+
+//   .rem-item {
+//     display: flex; gap: 10px; align-items: flex-start;
+
+//     .rem-dot { 
+//       width: 10px; height: 10px; border-radius: 999px; 
+//       margin-top: 6px; background: #6c757d; 
+//     }
+
+//     .rem-title { font-size: 13px; font-weight: 600; color: $text-1; }
+//     .rem-desc  { font-size: 12px; color: $text-3; }
+//   }
+
+//   .rem-warning .rem-dot { background: #f9b115; }
+//   .rem-info    .rem-dot { background: #39a8ff; }
+//   .rem-success .rem-dot { background: $accent; }
+
+//   /* Bo góc + bóng mềm */
+//   .card, .summary-card, .panel { border-radius: 12px; box-shadow: $shadow-sm; }
+//   .ovw-chart--donut {
+//     height: 260px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//   }
+
+//   /* ===== Gauge card modern ===== */
+// .gauge-card {
+//   position: relative;
+
+//   &__visual {
+//     position: relative;
+//     border-radius: 12px;
+//   }
+
+//   &__track {
+//     stroke: #eef0f3;
+//   }
+
+//   &__progress {
+//     stroke-linecap: round;
+//     transition: stroke-dasharray .35s ease, stroke .25s ease;
+//   }
+
+//   &__progress.is-good {
+//     stroke: #2eb85c;
+//   }
+//   &__progress.is-warning {
+//     stroke: #f9b115;
+//   }
+//   &__progress.is-over {
+//     stroke: #e55353;
+//   }
+
+//   &__percent {
+//     font-size: 28px;
+//     font-weight: 700;
+//     fill: #1f2d3d;
+//   }
+
+//   &__min,
+//   &__max {
+//     font-size: 12px;
+//     fill: #8a98a9;
+//   }
+
+//   /* badge đặt nổi nhẹ phía dưới gauge */
+//   &__badge {
+//     display: flex;
+//     justify-content: center;
+//     margin-top: -6px;
+//   }
+
+//   &__badge-chip {
+//     padding: 4px 10px;
+//     border-radius: 999px;
+//     font-size: 11px;
+//     font-weight: 600;
+//     border: 1px solid transparent;
+//   }
+
+//   &__badge-chip.is-good {
+//     background: rgba(46,184,92,.08);
+//     color: #2eb85c;
+//     border-color: rgba(46,184,92,.25);
+//   }
+//   &__badge-chip.is-warning {
+//     background: rgba(249,177,21,.12);
+//     color: #a16207;
+//     border-color: rgba(249,177,21,.35);
+//   }
+//   &__badge-chip.is-over {
+//     background: rgba(229,83,83,.10);
+//     color: #e55353;
+//     border-color: rgba(229,83,83,.35);
+//   }
+
+//   &__meta {
+//     display: grid;
+//     gap: 8px;
+//   }
+
+//   &__row {
+//     display: flex;
+//     justify-content: space-between;
+//     gap: 12px;
+//     font-size: 13px;
+
+//     .lbl {
+//       color: #8a98a9;
+//     }
+//     .val {
+//       color: #1f2d3d;
+//       font-weight: 500;
+//       text-align: right;
+//       white-space: nowrap;
+//     }
+//     .strong {
+//       font-weight: 700;
+//     }
+//     .delta.is-negative {
+//       color: #e55353;
+//       font-weight: 700;
+//     }
+//   }
+
+//   &__divider {
+//     height: 1px;
+//     background: #eef0f3;
+//     margin: 6px 0 2px;
+//   }
+
+//   &__hint {
+//     font-size: 11.5px;
+//     color: #6b7a8c;
+//     line-height: 1.4;
+//   }
+// }
+
+
+// }
+
+// /* ===== Responsive (dưới 1280px) ===== */
+// @media (max-width: 1280px) {
+//   .payroll-ovw {
+//     padding: 8px;
+//     .summary-card { margin-bottom: 10px; }
+//   }
+// }
+
+
 @use "sass:color";
 
 /* ===== Palette & tokens (chuẩn theo UI gốc) ===== */
@@ -34,6 +806,7 @@ $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
       padding: 6px 12px;
       line-height: 1.1;
       box-shadow: $shadow-sm;
+      cursor: pointer;
 
       &.active {
         border-color: color.scale($accent, $lightness: 28%) !important;
@@ -50,22 +823,23 @@ $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
     border: 1px solid $border-soft;
     border-radius: 12px;
     box-shadow: $shadow-sm;
-
-    /* NEW: cho card full height & layout đẹp hơn */
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: 16px;
 
     .text-medium-emphasis { color: $text-2; }
     .text-secondary { color: $text-3 !important; }
-    .fs-4 { font-size: 18px !important; }
+    .fs-4 { font-size: 20px !important; font-weight: 700; color: $text-1; }
   }
-/* ==== CƠ CẤU QUỸ LƯƠNG – LEGEND BUTTON ==== */
+
+  /* ==== CƠ CẤU QUỸ LƯƠNG – LEGEND BUTTON ==== */
   .fund-card {
     display: flex;
     align-items: stretch;
     gap: 16px;
+    flex-wrap: wrap; 
   }
 
   .fund-card-left {
@@ -73,6 +847,7 @@ $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto; /* Căn giữa trên mobile */
   }
 
   .fund-card-right {
@@ -81,6 +856,7 @@ $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
     flex-direction: column;
     gap: 8px;
     font-size: 13px;
+    min-width: 200px;
   }
 
   .fund-card-donut {
@@ -97,504 +873,253 @@ $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
     justify-content: center;
     pointer-events: none;
 
-    .label {
-      font-size: 12px;
-      color: $text-3;
-      margin-bottom: 2px;
-    }
-
-    .value {
-      font-size: 18px;
-      font-weight: 600;
-      color: $text-1;
-    }
+    .label { font-size: 12px; color: $text-3; margin-bottom: 2px; }
+    .value { font-size: 18px; font-weight: 600; color: $text-1; }
   }
 
-  /* Legend items là button nên override style default */
-  .fund-card-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
+  /* Legend items */
   .fund-card-legend-item {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-
     border: 0;
     background: transparent;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 8px;
     cursor: pointer;
+    transition: background 0.2s;
 
-    /* Tắt outline xanh mặc định */
-    outline: none;
+    &:hover { background: #f8fafc; }
+    &:focus-visible { outline: none; box-shadow: 0 0 0 1px rgba($accent, 0.4); }
+    &.is-active { background: rgba($accent, 0.06); }
+
+    .dot { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
+    .name { flex: 1; text-align: left; color: $text-2; font-weight: 500; }
+    .value { white-space: nowrap; color: $text-1; font-weight: 600; font-size: 12px; }
+    .percent { margin-left: 4px; color: $text-3; font-size: 11px; }
   }
 
-  /* Nếu focus bằng bàn phím thì có thể dùng box-shadow nhẹ (hoặc bỏ luôn) */
-  .fund-card-legend-item:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 1px rgba($accent, 0.4);
-  }
-
-  .fund-card-legend-item.is-active {
-    background: rgba($accent, 0.06);
-  }
-
-  .fund-card-legend-item .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-
-  .fund-card-legend-item .name {
-    flex: 1;
-    text-align: left;
-    color: $text-2;
-  }
-
-  .fund-card-legend-item .value {
-    white-space: nowrap;
-    color: $text-3;
-    font-size: 12px;
-  }
-
-  .fund-card-legend-item .percent {
-    margin-left: 4px;
-  }
-
-  .fund-card-active {
-    font-size: 12px;
-    color: $text-2;
-  }
-
-  .fund-card-hint {
-    font-size: 12px;
-    color: $text-3;
-    font-style: italic;
-  }
-
-  /* Phòng trường hợp focus dính vào wrapper nào trong donut */
-  .fund-card-left :focus {
-    outline: none;
-  }
-
-
-    /* ===== Card Kỳ lương hiện tại ===== */
+  /* ==================================================== 
+     ===== Card Kỳ lương hiện tại (UPDATED LAYOUT) ===== 
+     ==================================================== */
   .period-card {
     display: flex;
-    gap: 16px;
+    flex-wrap: wrap; /* Quan trọng: để xuống dòng trên mobile */
+    gap: 24px;
     align-items: stretch;
     min-height: 220px;
-  }
+    padding: 8px; /* Padding nội bộ nhẹ */
 
-  .period-card-chart {
-    flex: 0 0 40%;   // chart ~40%, info ~60%
-    display: flex;
-    align-items: center;
-  }
-
-  .period-card-chart-inner {
-    width: 100%;
-    // nền trắng, border nhẹ để tách khỏi info
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 4px 8px 8px;
-  }
-
-  // Tắt mọi outline xanh bên trong chart
-  .period-card-chart-inner *:focus,
-  .period-card-chart-inner *:focus-visible {
-    outline: none !important;
-  }
-
-  .period-card-chart-empty {
-    font-size: 13px;
-    color: $text-3;
-    text-align: center;
-  }
-
-  .period-bar-summary {
-    margin-top: 4px;
-    font-size: 13px;
-    color: $text-2;
-
-    .title {
-      font-weight: 600;
-      color: $text-1;
-      margin-bottom: 2px;
-    }
-
-    .line {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px 8px;
-      align-items: baseline;
-    }
-
-    .value {
-      font-weight: 600;
-      color: $text-1;
-    }
-
-    .percent {
-      color: $text-3;
-    }
-  }
-
-    .period-card-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 13px;
-    padding-left: 100px;   // NEW: đẩy cả khối info sang phải
-  }
-
-  .period-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-
-  .period-card-name {
-    font-weight: 600;
-    color: $text-1;
-    font-size: 15px;      // to hơn xíu cho rõ
-    margin-left: 4px;     // NEW: dịch riêng tiêu đề sang phải 1 chút
-  }
-
-    .period-card-status {
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: 15px;
-    font-weight: 500;
-    border: 1px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    line-height: 1;
-    white-space: nowrap;
-  }
-
-  .period-card-status.status-approved {
-    background: rgba($accent, 0.12);
-    color: $accent;
-    border-color: rgba($accent, 0.4);
-    box-shadow: 0 0 0 1px rgba($accent, 0.16);
-  }
-
-  .period-card-status.status-approved::before {
-    content: '✓';
-    font-size: 10px;
-    font-weight: 700;
-  }
-
-  .period-card-status.status-pending {
-    background: #fff4e5;
-    color: #f59e0b;
-    border-color: #fed7aa;
-  }
-
-
-  .period-card-row {
-    display: flex;
-    gap: 6px;
-    line-height: 1.4;
-
-    .label {
-      min-width: 120px;
-      color: $text-3;
-    }
-
-    .value {
-      color: $text-2;
-      flex: 1;
-
-      &.strong {
-        font-weight: 600;
-        color: $text-1;
+    /* CỘT TRÁI: BIỂU ĐỒ */
+    .period-card-chart {
+      flex: 0 0 100%; /* Mobile 100% */
+      
+      @media (min-width: 768px) {
+        flex: 0 0 40%; /* Desktop 40% */
+        border-right: 1px dashed $border-soft; /* Đường kẻ ngăn cách */
+        padding-right: 24px;
       }
     }
-  }
 
-  .period-card-actions {
-    margin-top: auto;
-    display: flex;
-    justify-content: flex-end;
-  }
+    .period-card-chart-inner {
+      width: 100%;
+      background: #ffffff;
+      outline: none !important; /* Tắt outline trên container */
+    }
 
-  @media (max-width: 991px) {
-    .period-card {
+    .period-card-chart-empty {
+      font-size: 13px; color: $text-3; text-align: center; padding: 2rem 0;
+    }
+
+    /* Tổng kết dưới biểu đồ */
+    .period-bar-summary {
+      margin-top: 12px;
+      font-size: 13px;
+      color: $text-2;
+      text-align: center;
+
+      .title {
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: $text-3;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+      }
+
+      .line {
+        display: flex;
+        flex-direction: column; /* Xếp dọc cho gọn */
+        align-items: center;
+      }
+
+      .value {
+        font-size: 20px;
+        font-weight: 700;
+        color: $text-1;
+        line-height: 1.2;
+      }
+
+      .percent {
+        font-size: 12px;
+        color: $text-3;
+      }
+    }
+
+    /* CỘT PHẢI: THÔNG TIN CHI TIẾT */
+    .period-card-info {
+      flex: 1;
+      display: flex;
       flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+      min-width: 250px; /* Đảm bảo không bị bóp quá nhỏ */
     }
 
-    .period-card-chart {
-      flex: 0 0 auto;
+    .period-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .period-card-name {
+      font-weight: 700;
+      color: #2563eb; /* Màu xanh primary nổi bật hơn */
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .period-card-status {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      white-space: nowrap;
+      
+      &.status-approved, &.status-closed {
+        background: #dcfce7; color: #166534; /* Xanh lá */
+      }
+      &.status-pending, &.status-open {
+        background: #fef9c3; color: #854d0e; /* Vàng */
+      }
+    }
+
+    .period-card-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid #f1f5f9; /* Kẻ mờ dưới mỗi dòng */
+      padding-bottom: 6px;
+      margin-bottom: 2px;
+
+      &:last-child { border-bottom: none; }
+
+      .label {
+        color: $text-3;
+        font-weight: 500;
+      }
+
+      .value {
+        color: $text-1;
+        font-weight: 500;
+        text-align: right;
+
+        &.strong {
+          font-weight: 700;
+          color: $text-1;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .period-card-actions {
+      margin-top: auto; /* Đẩy nút xuống đáy */
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 12px;
     }
   }
 
 
-    /* ===== RemindersCard (class đúng theo component) ===== */
+  /* ===== RemindersCard ===== */
   .ovw-reminders { display: grid; gap: 10px; }
 
   .rem-item {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: flex-start;
-  }
-
-  .rem-item--interactive {
-    border-radius: 10px;
-    padding: 6px 4px;
-    transition: background .12s ease, transform .12s ease;
-    &:hover { background: #f8fafc; transform: translateY(-1px); }
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    
+    &:hover { background: #f8fafc; }
   }
 
   .rem-body { flex: 1; min-width: 0; }
+  .rem-title { font-size: 13px; font-weight: 600; color: $text-1; margin-bottom: 2px; }
+  .rem-desc  { font-size: 12px; color: $text-2; line-height: 1.4; }
 
-  .rem-title { font-size: 13px; font-weight: 600; color: $text-1; }
-  .rem-desc  { font-size: 12px; color: $text-3; }
-
-  /* ✅ map đúng dotClass rem-dot--color */
   .rem-dot {
-    width: 10px; height: 10px; border-radius: 999px;
-    margin-top: 6px; background: #6c757d;
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 6px; flex-shrink: 0;
   }
-  .rem-dot--warning { background: #f9b115 !important; }
-  .rem-dot--info    { background: #39a8ff !important; }
-  .rem-dot--success { background: $accent !important; }
-  .rem-dot--danger  { background: #e55353 !important; }
-
-  /* skeleton nhanh gọn */
-  .rem-item--skeleton {
-    .skeleton-block {
-      height: 10px;
-      border-radius: 6px;
-      background: linear-gradient(90deg, #f3f4f6, #e5e7eb, #f3f4f6);
-      background-size: 200% 100%;
-      animation: ovw-shimmer 1.2s infinite linear;
-      margin-top: 3px;
-    }
-  }
-  @keyframes ovw-shimmer {
-    0% { background-position: 0% 0; }
-    100% { background-position: -200% 0; }
-  }
+  .rem-warning .rem-dot { background: #f9b115; box-shadow: 0 0 0 2px rgba(249,177,21,0.2); }
+  .rem-info    .rem-dot { background: #39a8ff; box-shadow: 0 0 0 2px rgba(57,168,255,0.2); }
+  .rem-success .rem-dot { background: $accent; box-shadow: 0 0 0 2px rgba(46,184,92,0.2); }
+  .rem-danger  .rem-dot { background: #e55353; box-shadow: 0 0 0 2px rgba(229,83,83,0.2); }
 
   /* ===== GuideLinksCard ===== */
-  .ovw-guide {
-    padding: 2px 0;
+  .ovw-guide__item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid $border-dashed;
+    background: $bg-card;
+    transition: all .2s ease;
+    margin-bottom: 8px;
 
-    &__empty {
-      border: 1.5px dashed $border-dashed;
-      border-radius: 12px;
-      padding: 14px;
-      background: #fbfcfd;
+    &:hover {
+      background: #f8fafc;
+      border-color: $accent;
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
     }
-    &__empty-title {
-      font-size: 14px; font-weight: 600; color: $text-1;
-      margin-bottom: 4px;
-    }
-    &__empty-desc {
-      font-size: 12px; color: $text-3; line-height: 1.4;
-      margin-bottom: 10px;
-    }
-
-    &__list {
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    &__item {
-      display: block;
-      padding: 10px 10px;
-      border-radius: 10px;
-      text-decoration: none;
-      border: 1px solid $border-dashed;
-      background: $bg-card;
-      transition: .12s ease;
-
-      &:hover {
-        background: #f8fafc;
-        border-color: $border-soft;
-        transform: translateY(-1px);
-      }
-    }
-    &__item-title {
-      font-size: 13px; font-weight: 600; color: $text-1;
-    }
-    &__item-desc {
-      font-size: 12px; color: $text-3; margin-top: 2px;
-    }
-    &__footer { margin-top: 8px; }
   }
-  /* ===== Budget Card (Combo B) ===== */
+  .ovw-guide__item-title { font-size: 13px; font-weight: 600; color: $text-1; }
+  .ovw-guide__item-desc { font-size: 12px; color: $text-3; margin-top: 2px; }
+
+  /* ===== Budget Card ===== */
   .budget-card {
     display: grid;
-    gap: 14px;
+    gap: 16px;
   }
-
-  .budget-card__gauge {
-    /* giữ gauge tách khối trên */
-  }
-
-  .budget-card__section {
-    border-top: 1px solid #eef0f3;
-    padding-top: 10px;
-  }
-
-  .budget-card__title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1f2d3d;
-    margin-bottom: 8px;
-  }
-
-  .budget-card__list {
-    display: grid;
-    gap: 8px;
-  }
-
-  .budget-card__row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 10px;
-    border: 1px solid #f0f2f5;
-    border-radius: 10px;
-    background: #fff;
-
-  .left {
-    .label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #1f2d3d;
-    }
-    .value {
-      font-size: 11.5px;
-      color: #8a98a9;
-      margin-top: 1px;
-    }
-  }
-
-  .delta {
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #f6f7f9;
-    color: #516174;
-
-    &.is-up {
-      background: rgba(46,184,92,0.08);
-      color: #2eb85c;
-    }
-    &.is-down {
-      background: rgba(220,53,69,0.08);
-      color: #dc3545;
-    }
-  }
-}
-
-.budget-card__forecast {
-  display: flex;
-  gap: 12px;
-  padding: 10px;
-  border: 1px solid #f0f2f5;
-  border-radius: 12px;
-
-  .forecast-left {
-    min-width: 110px;
-    display: grid;
-    gap: 6px;
-    align-content: start;
-  }
-
-  .forecast-big {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1f2d3d;
-  }
-
-  .forecast-risk {
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-flex;
-    padding: 2px 8px;
-    border-radius: 999px;
-    width: fit-content;
-
-    &.risk-low {
-      background: rgba(46,184,92,0.08);
-      color: #2eb85c;
-    }
-    &.risk-medium {
-      background: rgba(249,177,21,0.10);
-      color: #f59e0b;
-    }
-    &.risk-high {
-      background: rgba(220,53,69,0.10);
-      color: #dc3545;
-    }
-  }
-
-  .forecast-right {
-    flex: 1;
-  }
-
-  .forecast-note {
-    font-size: 12px;
-    color: #516174;
-    margin-bottom: 6px;
-  }
-
-  .forecast-hint {
-    font-size: 11.5px;
-    color: #8a98a9;
-  }
-}
-
-.budget-card__empty-mini {
-  font-size: 11.5px;
-  color: #8a98a9;
-  font-style: italic;
-}
-
-.budget-card__actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding-top: 4px;
-
-  .dot-sep {
-    color: #c5ccd6;
-    font-size: 10px;
-  }
-}
-
-
-  /* Panel (các ô lớn) */
+  
+  /* Panel (Container chính) */
   .panel {
     margin-bottom: 12px;
     border: 1px solid $border-soft !important;
     border-radius: 12px !important;
     background: $bg-card;
     box-shadow: $shadow-sm;
+    overflow: hidden; /* Bo góc con */
 
-    .card-header,
-    .bg-light {
+    .card-header, .bg-light {
       background: $bg-header !important;
       border-bottom: 1px solid $border-soft;
       padding: 12px 16px;
+      font-weight: 600;
+      color: $text-1;
+      
+      .small { font-weight: 400; color: $text-3; margin-left: 6px; font-size: 12px; }
     }
-
-    .fw-semibold { color: $text-1; font-weight: 600; }
-    .text-medium-emphasis { color: $text-3 !important; }
-    .card-body { padding: 14px 16px; }
+    
+    .card-body { padding: 16px; }
   }
 
   /* Empty state */
@@ -603,168 +1128,70 @@ $shadow-sm:     0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.04);
     border: 1.5px dashed $border-dashed;
     border-radius: 12px;
     background: #fbfcfd;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     color: $text-3;
 
-    .empty-ico { font-size: 26px; margin-bottom: 6px; color: $accent; }
-    .empty-txt { font-size: 13px; }
-  }
-
-  /* Gauge: chữ màu tối, progress xanh */
-  svg text { fill: $text-1; }
-  .gauge {
-    .small { color: $text-2; }
-  }
-
-  /* Cột phải – Lời nhắc */
-  .ovw-reminders { display: grid; gap: 10px; }
-
-  .rem-item {
-    display: flex; gap: 10px; align-items: flex-start;
-
-    .rem-dot { 
-      width: 10px; height: 10px; border-radius: 999px; 
-      margin-top: 6px; background: #6c757d; 
-    }
-
-    .rem-title { font-size: 13px; font-weight: 600; color: $text-1; }
-    .rem-desc  { font-size: 12px; color: $text-3; }
-  }
-
-  .rem-warning .rem-dot { background: #f9b115; }
-  .rem-info    .rem-dot { background: #39a8ff; }
-  .rem-success .rem-dot { background: $accent; }
-
-  /* Bo góc + bóng mềm */
-  .card, .summary-card, .panel { border-radius: 12px; box-shadow: $shadow-sm; }
-  .ovw-chart--donut {
-    height: 260px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* ===== Gauge card modern ===== */
-.gauge-card {
-  position: relative;
-
-  &__visual {
-    position: relative;
-    border-radius: 12px;
-  }
-
-  &__track {
-    stroke: #eef0f3;
-  }
-
-  &__progress {
-    stroke-linecap: round;
-    transition: stroke-dasharray .35s ease, stroke .25s ease;
-  }
-
-  &__progress.is-good {
-    stroke: #2eb85c;
-  }
-  &__progress.is-warning {
-    stroke: #f9b115;
-  }
-  &__progress.is-over {
-    stroke: #e55353;
-  }
-
-  &__percent {
-    font-size: 28px;
-    font-weight: 700;
-    fill: #1f2d3d;
-  }
-
-  &__min,
-  &__max {
-    font-size: 12px;
-    fill: #8a98a9;
-  }
-
-  /* badge đặt nổi nhẹ phía dưới gauge */
-  &__badge {
-    display: flex;
-    justify-content: center;
-    margin-top: -6px;
-  }
-
-  &__badge-chip {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    border: 1px solid transparent;
-  }
-
-  &__badge-chip.is-good {
-    background: rgba(46,184,92,.08);
-    color: #2eb85c;
-    border-color: rgba(46,184,92,.25);
-  }
-  &__badge-chip.is-warning {
-    background: rgba(249,177,21,.12);
-    color: #a16207;
-    border-color: rgba(249,177,21,.35);
-  }
-  &__badge-chip.is-over {
-    background: rgba(229,83,83,.10);
-    color: #e55353;
-    border-color: rgba(229,83,83,.35);
-  }
-
-  &__meta {
-    display: grid;
-    gap: 8px;
-  }
-
-  &__row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: 13px;
-
-    .lbl {
-      color: #8a98a9;
-    }
-    .val {
-      color: #1f2d3d;
-      font-weight: 500;
-      text-align: right;
-      white-space: nowrap;
-    }
-    .strong {
-      font-weight: 700;
-    }
-    .delta.is-negative {
-      color: #e55353;
-      font-weight: 700;
-    }
-  }
-
-  &__divider {
-    height: 1px;
-    background: #eef0f3;
-    margin: 6px 0 2px;
-  }
-
-  &__hint {
-    font-size: 11.5px;
-    color: #6b7a8c;
-    line-height: 1.4;
+    .empty-ico { font-size: 32px; margin-bottom: 8px; color: #cbd5e1; }
+    .empty-txt { font-size: 13px; font-weight: 500; }
   }
 }
 
-
-}
-
-/* ===== Responsive (dưới 1280px) ===== */
-@media (max-width: 1280px) {
+/* ===== Responsive Mobile (dưới 768px) ===== */
+@media (max-width: 768px) {
   .payroll-ovw {
     padding: 8px;
-    .summary-card { margin-bottom: 10px; }
+    
+    .summary-card { margin-bottom: 12px; height: auto; }
+    
+    .period-card {
+      gap: 16px;
+      
+      .period-card-chart { 
+        padding-right: 0; 
+        border-right: none; 
+        border-bottom: 1px dashed $border-dashed;
+        padding-bottom: 16px;
+      }
+      
+      .period-bar-summary .line {
+        flex-direction: row; 
+        justify-content: center;
+        gap: 8px;
+      }
+    }
+    
+    .fund-card-left { flex: 0 0 100%; margin-bottom: 16px; }
+  }
+}
+
+/* =========================================== */
+/* FIX TRIỆT ĐỂ: Tắt viền xanh (focus outline) */
+/* =========================================== */
+
+/* Tắt outline cho wrapper chính */
+.recharts-wrapper {
+  outline: none !important;
+}
+
+/* Tắt outline cho tất cả các thẻ con bên trong (đặc biệt là path và rect) */
+.recharts-wrapper *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.recharts-surface,
+.recharts-layer,
+.recharts-rectangle,
+.recharts-sector,
+.recharts-curve,
+.recharts-dot,
+path, 
+rect {
+  outline: none !important;
+  &:focus {
+    outline: none !important;
   }
 }

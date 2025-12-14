@@ -1,133 +1,110 @@
-import {
-  CBadge,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CRow,
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { 
+  CCard, CCardBody, CCardHeader, CCol, CRow, CButton, CBadge, CSpinner 
 } from '@coreui/react'
-import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { fetchPayrollPeriodById } from '../../api/periodApi'
+import CIcon from '@coreui/icons-react'
+import { cilArrowLeft, cilLockLocked, cilCheckCircle } from '@coreui/icons'
+import { fetchPayrollPeriodById, closePayrollPeriod } from '../../api/payrollApi'
 
-// Helper màu status (tạm đơn giản)
-const statusColor = (status = '') => {
-  const s = status.toLowerCase()
-  if (s.includes('duyệt')) return 'success'
-  if (s.includes('chờ') || s.includes('pending')) return 'warning'
-  if (s.includes('đóng') || s.includes('hủy')) return 'secondary'
-  return 'info'
-}
-
-export default function PayrollPeriodDetailPage() {
-  // ⚠️ Route là "periods/:id" nên phải lấy { id }
+const PayrollPeriodDetailPage = () => {
   const { id } = useParams()
-  const location = useLocation()
   const navigate = useNavigate()
-
-  // Nếu đi từ Overview, ta đã truyền state.period
-  const [period, setPeriod] = useState(location.state?.period || null)
-  const [loading, setLoading] = useState(!location.state?.period)
-  const [error, setError] = useState(null)
+  const [period, setPeriod] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [processing, setProcessing] = useState(false) // Loading cho nút bấm
 
   useEffect(() => {
-    // Nếu đã có dữ liệu từ state (từ Overview) thì không cần gọi API nữa
-    if (location.state?.period) return
+    loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
-    let cancelled = false
-
-    ;(async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await fetchPayrollPeriodById(id)
-        if (!cancelled) setPeriod(data)
-      } catch (e) {
-        console.error('fetchPayrollPeriodById error:', e)
-        if (!cancelled) setError('Không tìm thấy kỳ lương')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-
-    return () => {
-      cancelled = true
+  const loadData = async () => {
+    try {
+      const data = await fetchPayrollPeriodById(id)
+      setPeriod(data)
+    } catch (error) {
+      console.error("Lỗi:", error)
+    } finally {
+      setLoading(false)
     }
-  }, [id, location.state])
-
-  if (loading) {
-    return <div>Đang tải dữ liệu kỳ lương...</div>
   }
 
-  if (error || !period) {
-    return (
-      <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center">
-          <div className="fw-semibold">Chi tiết kỳ lương</div>
-          <CButton
-            color="secondary"
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/payroll/periods')}
-          >
-            Quay về danh sách
-          </CButton>
-        </CCardHeader>
-        <CCardBody>
-          <p>{error || 'Không tìm thấy dữ liệu kỳ lương.'}</p>
-        </CCardBody>
-      </CCard>
-    )
+  const handleClosePeriod = async () => {
+    if (!window.confirm("Bạn có chắc muốn đóng kỳ lương này? Hành động này không thể hoàn tác.")) return
+    
+    setProcessing(true)
+    try {
+      await closePayrollPeriod(id)
+      alert("Đã đóng kỳ lương thành công!")
+      loadData() // Load lại để cập nhật trạng thái
+    } catch (error) {
+      alert("Lỗi: " + error.message)
+    } finally {
+      setProcessing(false)
+    }
   }
+
+  if (loading) return <div className="text-center pt-5"><CSpinner color="primary"/></div>
+  if (!period) return <div className="text-center pt-5 text-danger">Không tìm thấy kỳ lương</div>
 
   return (
-    <CCard>
-      <CCardHeader className="d-flex justify-content-between align-items-center">
-        <div className="d-flex align-items-center gap-3">
-          <div className="fw-semibold fs-5">Chi tiết kỳ lương</div>
-          <div className="fw-semibold">{period.name}</div>
-          <CBadge color={statusColor(period.status)} className="px-3 py-1">
-            {period.status}
+    <div>
+      {/* Nút quay lại */}
+      <CButton color="link" className="px-0 mb-3 text-decoration-none" onClick={() => navigate('/payroll/periods')}>
+        <CIcon icon={cilArrowLeft} className="me-1"/> Quay lại danh sách
+      </CButton>
+
+      <CCard className="shadow-sm border-0">
+        <CCardHeader className="bg-white py-3 d-flex justify-content-between align-items-center">
+          <h4 className="m-0 fw-bold">{period.name}</h4>
+          <CBadge color={period.isClosed ? 'success' : 'warning'} className="fs-6 px-3 py-2">
+            {period.isClosed ? 'ĐÃ ĐÓNG' : 'ĐANG MỞ'}
           </CBadge>
-        </div>
-        <div className="d-flex gap-2">
-          <CButton
-            color="secondary"
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(-1)}
-          >
-            Quay lại
-          </CButton>
-        </div>
-      </CCardHeader>
+        </CCardHeader>
+        
+        <CCardBody>
+          {/* Thông tin chính */}
+          <div className="bg-light p-4 rounded mb-4">
+            <CRow className="gy-3">
+              <CCol md={4}>
+                <div className="text-medium-emphasis small text-uppercase fw-bold">Thời gian áp dụng</div>
+                <div className="fs-5">{period.startDate} <span className="text-muted mx-1">→</span> {period.endDate}</div>
+              </CCol>
+              <CCol md={4}>
+                <div className="text-medium-emphasis small text-uppercase fw-bold">Ngày chi trả dự kiến</div>
+                <div className="fs-5">{period.paymentDate}</div>
+              </CCol>
+              <CCol md={4}>
+                <div className="text-medium-emphasis small text-uppercase fw-bold">ID Hệ thống</div>
+                <div className="fs-5 font-monospace">#{period.payrollPeriodId || period.id}</div>
+              </CCol>
+            </CRow>
+          </div>
 
-      <CCardBody>
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <p><strong>Chu kỳ:</strong> {period.timeRange}</p>
-            <p><strong>Ngày chi trả dự kiến:</strong> {period.paymentDate}</p>
-            <p><strong>Người phê duyệt / lập:</strong> {period.approver || period.createdBy}</p>
-          </CCol>
-          <CCol md={6}>
-            <p>
-              <strong>Tổng thực chi:</strong>{' '}
-              {period.totalPaid != null
-                ? period.totalPaid.toLocaleString('vi-VN') + ' đ'
-                : '—'}
-            </p>
-            <p>
-              <strong>SL Nhân viên:</strong>{' '}
-              {period.headcount != null
-                ? period.headcount.toLocaleString('vi-VN')
-                : '—'}
-            </p>
-          </CCol>
-        </CRow>
-
-        {/* Sau này thêm bảng nhân viên / biểu đồ ở đây */}
-      </CCardBody>
-    </CCard>
+          {/* Khu vực hành động */}
+          <div className="d-flex justify-content-end gap-2 border-top pt-3">
+            {!period.isClosed ? (
+              <CButton 
+                color="danger" 
+                className="text-white"
+                onClick={handleClosePeriod}
+                disabled={processing}
+              >
+                {processing ? <CSpinner size="sm"/> : <CIcon icon={cilLockLocked} className="me-2"/>}
+                Chốt & Đóng kỳ lương
+              </CButton>
+            ) : (
+              <CButton color="secondary" variant="ghost" disabled>
+                <CIcon icon={cilCheckCircle} className="me-2 text-success"/>
+                Kỳ lương đã được chốt sổ
+              </CButton>
+            )}
+          </div>
+        </CCardBody>
+      </CCard>
+    </div>
   )
 }
+
+export default PayrollPeriodDetailPage

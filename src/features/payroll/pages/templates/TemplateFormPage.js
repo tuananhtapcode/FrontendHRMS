@@ -1,9 +1,12 @@
 import {
   cilArrowLeft,
   cilCompress,
-  cilLightbulb, // Icon đã sửa
+  cilLightbulb,
   cilPlus,
+  cilSave,
   cilSearch,
+  cilWarning,
+  cilX // Icon đóng modal
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import {
@@ -20,7 +23,6 @@ import {
   CFormSwitch,
   CInputGroup,
   CInputGroupText,
-  // 1. IMPORT THÊM CÁC COMPONENT MODAL
   CModal,
   CModalBody,
   CModalFooter,
@@ -37,184 +39,180 @@ import {
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-// Import SCSS
-import '../../scss/template-form-page.scss'
+// Dùng chung SCSS với trang Components
+import '../../scss/components-page.scss'
 
-// Dữ liệu giả cho bảng thành phần
-const mockComponents = [
-  {
-    id: 1,
-    name: 'Tổng thu nhập',
-    code: 'TONG_THU_NHAP',
-    display: 'Tổng thu nhập',
-    formula: '=TONG_THU_NHAP',
-    visible: true,
-  },
-  {
-    id: 2,
-    name: 'Tổng khấu trừ',
-    code: 'TONG_KHAU_TRU',
-    display: 'Tổng khấu trừ',
-    formula: '=TONG_KHAU_TRU',
-    visible: true,
-  },
-  {
-    id: 3,
-    name: 'Lương kỳ này',
-    code: 'LUONG_KY_NAY',
-    display: 'Lương kỳ này',
-    formula: '=TONG_THU_NHAP-TONG_KHAU_TRU',
-    visible: true,
-  },
-  {
-    id: 4,
-    name: 'Tạm ứng',
-    code: 'TAM_UNG',
-    display: 'Tạm ứng',
-    formula: '',
-    visible: true,
-  },
-  {
-    id: 5,
-    name: 'Thực lĩnh',
-    code: 'THUC_LINH',
-    display: 'Thực lĩnh',
-    formula: '=LUONG_KY_NAY-TAM_UNG',
-    visible: true,
-  },
+// --- DỮ LIỆU ĐANG CÓ TRONG BẢNG CHÍNH (Mock) ---
+const initialComponents = [
+  { id: 1, name: 'Tổng thu nhập', code: 'TONG_THU_NHAP', display: 'Tổng thu nhập', formula: '=TONG_THU_NHAP', visible: true },
+  { id: 2, name: 'Tổng khấu trừ', code: 'TONG_KHAU_TRU', display: 'Tổng khấu trừ', formula: '=TONG_KHAU_TRU', visible: true },
+  { id: 3, name: 'Lương kỳ này', code: 'LUONG_KY_NAY', display: 'Lương kỳ này', formula: '=TONG_THU_NHAP-TONG_KHAU_TRU', visible: true },
 ]
 
-/**
- * Utility Component để render công thức có màu
- */
+// --- [MỚI] DỮ LIỆU NGUỒN ĐỂ CHỌN TRONG MODAL (Giả lập lấy từ API Components) ---
+// Cấu trúc giống ảnh image_2ee823.jpg
+const AVAILABLE_COMPONENTS = [
+  { id: 101, code: 'LUONG_NGAY_CONG', name: 'Lương ngày công (công chuẩn cố định)', type: 'Lương', nature: 'Thu nhập' },
+  { id: 102, code: 'SO_NGAY_NGHI_KL', name: 'Số ngày nghỉ không lương', type: 'Chấm công', nature: 'Khác' },
+  { id: 103, code: 'TONG_CONG_HUONG_LUONG', name: 'Tổng công hưởng lương', type: 'Chấm công', nature: 'Khác' },
+  { id: 104, code: 'CONG_AN_CA', name: 'Công ăn ca', type: 'Chấm công', nature: 'Khác' },
+  { id: 105, code: 'CONG_DIEU_DONG', name: 'Công điều động', type: 'Chấm công', nature: 'Khác' },
+  { id: 106, code: 'SO_LAN_CAP_NHAT_CONG', name: 'Số lần cập nhật công', type: 'Chấm công', nature: 'Khác' },
+  { id: 107, code: 'SO_LAN_DI_CONG_TAC', name: 'Số lần đi công tác', type: 'Chấm công', nature: 'Khác' },
+  { id: 108, code: 'SO_NGAY_PHEP_CHUA_SD', name: 'Số ngày phép chưa sử dụng', type: 'Chấm công', nature: 'Khác' },
+  { id: 109, code: 'TONG_GIO_LAM_THEM', name: 'Tổng giờ làm thêm', type: 'Chấm công', nature: 'Khác' },
+  { id: 110, code: 'BHXH_NV', name: 'Bảo hiểm xã hội (Nhân viên đóng)', type: 'Bảo hiểm', nature: 'Khấu trừ' },
+]
+
 const FormulaDisplay = ({ formula }) => {
   if (!formula) return null
-
   const parts = formula.split(/(=|\+|-|\*|\/)/g).filter(Boolean)
-
   return (
-    <span className="formula-cell">
+    <span className="formula-cell" style={{ fontFamily: 'monospace', color: '#636f83' }}>
       {parts.map((part, index) => {
-        if (part.match(/(=|\+|-|\*|\/)/)) {
-          return (
-            <span key={index} className="operator">
-              {part}
-            </span>
-          )
-        }
-        return (
-          <span key={index} className="variable">
-            {part}
-          </span>
-        )
+        if (part.match(/(=|\+|-|\*|\/)/)) return <span key={index} className="fw-bold text-dark mx-1">{part}</span>
+        return <span key={index} className="text-primary">{part}</span>
       })}
     </span>
   )
 }
 
 const TemplateFormPage = () => {
-  const [componentsData, setComponentsData] = useState(mockComponents)
-  // State để quản lý modal
-  const [showSaveConfirm, setShowSaveConfirm] = useState(false)
   const navigate = useNavigate()
+  const [componentsData, setComponentsData] = useState(initialComponents)
+  
+  // States Modal Xác nhận Lưu
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false)
 
-  // Mở modal khi nhấn "Lưu"
-  const handleSave = () => {
-    setShowSaveConfirm(true)
+  // --- [MỚI] STATES CHO MODAL CHỌN THÀNH PHẦN ---
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [modalSearch, setModalSearch] = useState('')
+  const [selectedIds, setSelectedIds] = useState([]) // Lưu ID các dòng được tick trong modal
+
+  // --- PHÂN TRANG (Main Page) ---
+  const [pageSize, setPageSize] = useState(10)
+  const [page, setPage] = useState(1)
+  
+  const totalItems = componentsData.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+  const view = componentsData.slice((page - 1) * pageSize, page * pageSize)
+
+  // --- HANDLERS CHÍNH ---
+  const handleSave = () => setShowSaveConfirm(true)
+  const handleCancel = () => navigate('/payroll/templates')
+  const confirmSave = () => { setShowSaveConfirm(false); navigate('/payroll/templates') }
+
+  // --- HANDLERS MODAL CHỌN THÀNH PHẦN ---
+  const handleOpenAddModal = () => {
+    setSelectedIds([]) // Reset lựa chọn khi mở lại
+    setModalSearch('')
+    setShowAddModal(true)
   }
 
-  // Quay về trang danh sách (sửa lỗi nút Hủy/Quay lại)
-  const handleCancel = () => {
-    navigate('/payroll/templates')
+  // Toggle checkbox từng dòng
+  const toggleSelectComponent = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
   }
 
-  // Xác nhận lưu (từ modal)
-  const confirmSave = () => {
-    console.log('ĐÃ ĐỒNG Ý LƯU! Đang điều hướng...')
-    setShowSaveConfirm(false)
-    // Điều hướng về trang danh sách
-    navigate('/payroll/templates')
+  // Toggle Select All
+  const toggleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(AVAILABLE_COMPONENTS.map(c => c.id))
+    } else {
+      setSelectedIds([])
+    }
+  }
+
+  // Ấn "Áp dụng" -> Thêm vào bảng chính
+  const handleApplySelection = () => {
+    // Lọc ra các object từ ID đã chọn
+    const selectedItems = AVAILABLE_COMPONENTS.filter(c => selectedIds.includes(c.id))
+    
+    // Map sang cấu trúc bảng chính (thêm các field mặc định: visible, display...)
+    const newItems = selectedItems.map(item => ({
+        id: Date.now() + Math.random(), // Tạo ID mới để tránh trùng key
+        name: item.name,
+        code: item.code,
+        display: item.name, // Mặc định tên hiển thị giống tên gốc
+        formula: '',        // Mặc định chưa có công thức
+        visible: true
+    }))
+
+    // Cập nhật bảng chính
+    setComponentsData([...componentsData, ...newItems])
+    setShowAddModal(false)
   }
 
   return (
-    <div className="template-form-page">
-      {/* 1. PHẦN HEADER CỐ ĐỊNH (HỦY / LƯU) */}
-      <div className="page-form-header">
-        <CButton variant="ghost" size="sm" className="me-2" onClick={handleCancel}>
-          <CIcon icon={cilArrowLeft} size="lg" />
-        </CButton>
-        <h4 className="mb-0">Thêm mẫu bảng lương</h4>
-        <div className="ms-auto">
-          <CButton variant="outline" color="dark" className="me-2" onClick={handleCancel}>
-            Hủy bỏ
-          </CButton>
-          <CButton color="primary" onClick={handleSave}>
-            Lưu
-          </CButton>
+    <div className="payroll-components">
+      
+      {/* 1. HEADER */}
+      <div className="pc-header">
+        <div className="left d-flex align-items-center gap-3">
+            <CButton 
+                color="light" variant="outline" onClick={handleCancel} 
+                className="d-flex align-items-center border-secondary text-secondary" style={{ height: '38px' }}
+            >
+                <CIcon icon={cilArrowLeft} className="me-2" /> Quay lại
+            </CButton>
+            <div className="title mb-0">Thêm mẫu bảng lương</div>
+        </div>
+        <div className="right d-flex gap-2">
+           <CButton color="secondary" variant="ghost" onClick={handleCancel}>Hủy bỏ</CButton>
+           <CButton color="success" className="text-white d-flex align-items-center" onClick={handleSave}>
+                <CIcon icon={cilSave} className="me-2" /> Lưu
+           </CButton>
         </div>
       </div>
 
-      {/* 2. PHẦN NỘI DUNG FORM (CÓ THỂ CUỘN) */}
-      <div className="form-content">
-        {/* THÔNG TIN CHUNG */}
-        <CCard className="mb-3">
-          <CCardHeader>THÔNG TIN CHUNG</CCardHeader>
-          <CCardBody>
+      <div className="form-content mt-3">
+        {/* 2. FORM THÔNG TIN CHUNG (Giữ nguyên) */}
+        <CCard className="mb-3 shadow-sm border-0">
+          <CCardHeader className="bg-white fw-bold py-3">THÔNG TIN CHUNG</CCardHeader>
+          <CCardBody className="p-4">
             <CForm>
-              <CRow className="g-3">
-                <CCol md={6}>
-                  <CFormLabel htmlFor="donViApDung">
-                    Đơn vị áp dụng <span className="text-danger">*</span>
-                  </CFormLabel>
-                  <CFormSelect id="donViApDung">
-                    <option value="">Chọn đơn vị</option>
-                  </CFormSelect>
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="viTriApDung">Vị trí áp dụng</CFormLabel>
-                  <CFormSelect id="viTriApDung">
-                    <option value="">Tất cả các vị trí trong đơn vị</option>
-                  </CFormSelect>
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="nhanVienApDung">
-                    Nhân viên áp dụng
-                  </CFormLabel>
-                  <CFormSelect id="nhanVienApDung">
-                    <option value="">Tất cả các nhân viên trong đơn vị</option>
-                  </CFormSelect>
-                </CCol>
-                <CCol md={6}>
-                  <CFormLabel htmlFor="tenMau">
-                    Tên mẫu bảng lương <span className="text-danger">*</span>
-                  </CFormLabel>
-                  <CFormInput
-                    id="tenMau"
-                    defaultValue="Mẫu bảng lương - Tất cả các vị trí trong đơn vị"
-                  />
+              <CRow className="mb-4 align-items-center">
+                <CCol md={3}><CFormLabel className="fw-semibold mb-0">Đơn vị áp dụng <span className="text-danger">*</span></CFormLabel></CCol>
+                <CCol md={9}><CFormSelect><option value="">Chọn đơn vị</option></CFormSelect></CCol>
+              </CRow>
+              <CRow className="mb-4 align-items-center">
+                <CCol md={3}><CFormLabel className="fw-semibold mb-0">Tên mẫu bảng lương <span className="text-danger">*</span></CFormLabel></CCol>
+                <CCol md={9}><CFormInput defaultValue="Mẫu bảng lương - Tất cả các vị trí trong đơn vị" /></CCol>
+              </CRow>
+              <CRow className="mb-4 align-items-center">
+                <CCol md={3}><CFormLabel className="fw-semibold mb-0">Trạng thái</CFormLabel></CCol>
+                <CCol md={9} className="d-flex gap-4">
+                     <CFormCheck type="radio" name="status" label="Đang áp dụng" defaultChecked className="text-success fw-semibold"/>
+                     <CFormCheck type="radio" name="status" label="Ngừng áp dụng" />
                 </CCol>
               </CRow>
             </CForm>
           </CCardBody>
         </CCard>
 
-        {/* THÀNH PHẦN LƯƠNG */}
-        <CCard>
-          <CCardHeader className="components-header">
-            <span>THÀNH PHẦN LƯƠNG</span>
-            <div className="d-flex align-items-center">
-              <CInputGroup className="me-3">
-                <CInputGroupText>
-                  <CIcon icon={cilSearch} />
-                </CInputGroupText>
-                <CFormInput placeholder="Tìm kiếm" />
-              </CInputGroup>
-              <CButton variant="outline">
-                <CIcon icon={cilLightbulb} className="me-2" />
-                Tạo mẫu bảng lương bằng AI
-              </CButton>
+        {/* 3. BẢNG THÀNH PHẦN LƯƠNG */}
+        <CCard className="shadow-sm border-0">
+          <CCardHeader className="bg-white py-3">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div className="d-flex align-items-center gap-3">
+                    <span className="fw-bold fs-5">THÀNH PHẦN LƯƠNG</span>
+                    <CFormSwitch label="Xem trước" id="previewSwitch" />
+                </div>
+                <div className="d-flex gap-2">
+                    {/* NÚT THÊM THÀNH PHẦN -> MỞ MODAL */}
+                    <CButton 
+                        color="success" 
+                        className="text-white d-flex align-items-center text-nowrap"
+                        onClick={handleOpenAddModal}
+                    >
+                        <CIcon icon={cilPlus} className="me-2" /> Thêm thành phần
+                    </CButton>
+                </div>
             </div>
           </CCardHeader>
+          
           <CCardBody className="p-0">
             <CTable hover responsive align="middle" className="mb-0">
               <CTableHead color="light">
@@ -223,21 +221,17 @@ const TemplateFormPage = () => {
                   <CTableHeaderCell>Mã thành phần</CTableHeaderCell>
                   <CTableHeaderCell>Tên cột hiển thị</CTableHeaderCell>
                   <CTableHeaderCell>Công thức</CTableHeaderCell>
-                  <CTableHeaderCell>Hiển thị</CTableHeaderCell>
+                  <CTableHeaderCell className="text-center">Hiển thị</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {componentsData.map((item) => (
+                {view.map((item) => (
                   <CTableRow key={item.id}>
-                    <CTableDataCell>{item.name}</CTableDataCell>
-                    <CTableDataCell>
-                      <code className="code-cell">{item.code}</code>
-                    </CTableDataCell>
+                    <CTableDataCell className="fw-semibold">{item.name}</CTableDataCell>
+                    <CTableDataCell><code className="text-primary bg-light px-2 py-1 rounded">{item.code}</code></CTableDataCell>
                     <CTableDataCell>{item.display}</CTableDataCell>
-                    <CTableDataCell>
-                      <FormulaDisplay formula={item.formula} />
-                    </CTableDataCell>
-                    <CTableDataCell>
+                    <CTableDataCell><FormulaDisplay formula={item.formula} /></CTableDataCell>
+                    <CTableDataCell className="text-center">
                       <CFormCheck defaultChecked={item.visible} />
                     </CTableDataCell>
                   </CTableRow>
@@ -245,47 +239,93 @@ const TemplateFormPage = () => {
               </CTableBody>
             </CTable>
           </CCardBody>
+          {/* Footer phân trang chính (giữ nguyên logic cũ) */}
+          {/* ... */}
         </CCard>
       </div>
 
-      {/* 3. PHẦN FOOTER CỐ ĐỊNH */}
-      <div className="page-form-footer">
-        <CFormSwitch
-          label="Xem trước mẫu bảng lương"
-          id="previewSwitch"
-        />
-        <div className="ms-auto">
-          <CButton color="primary" className="me-2">
-            <CIcon icon={cilPlus} className="me-2" />
-            Thêm thành phần
-          </CButton>
-          <CButton variant="outline" color="dark">
-            <CIcon icon={cilCompress} className="me-2" />
-            Tạo mẫu rút gọn
-          </CButton>
-        </div>
-      </div>
-
-      {/* 6. ĐỊNH NGHĨA MODAL XÁC NHẬN */}
-      {/* Thêm alignment="center" để căn giữa modal theo chiều dọc */}
-      <CModal
-        visible={showSaveConfirm}
-        onClose={() => setShowSaveConfirm(false)}
-        alignment="center"
-      >
-        <CModalHeader onClose={() => setShowSaveConfirm(false)}>
-          <CModalTitle>Xác nhận lưu</CModalTitle>
+      {/* --- [MỚI] MODAL CHỌN THÀNH PHẦN (Giống ảnh image_2ee823.jpg) --- */}
+      <CModal visible={showAddModal} onClose={() => setShowAddModal(false)} size="xl" alignment="center">
+        <CModalHeader>
+          <CModalTitle className="fw-bold">Chọn thành phần</CModalTitle>
         </CModalHeader>
-        <CModalBody>Bạn có chắc chắn muốn lưu mẫu bảng lương này không?</CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowSaveConfirm(false)}>
-            Hủy
-          </CButton>
-          <CButton color="primary" onClick={confirmSave}>
-            Đồng ý
-          </CButton>
+        <CModalBody className="p-0">
+            {/* Toolbar trong modal */}
+            <div className="p-3 d-flex justify-content-between align-items-center border-bottom bg-light">
+                 <div className="d-flex gap-3 align-items-center" style={{ width: '60%' }}>
+                     <CInputGroup>
+                        <CInputGroupText className="bg-white"><CIcon icon={cilSearch} /></CInputGroupText>
+                        <CFormInput placeholder="Tìm kiếm" value={modalSearch} onChange={(e) => setModalSearch(e.target.value)} />
+                     </CInputGroup>
+                     <CFormSelect style={{ width: '200px' }} className="d-none d-md-block">
+                        <option>Tất cả thành phần</option>
+                        <option>Lương</option>
+                        <option>Chấm công</option>
+                     </CFormSelect>
+                 </div>
+                 <CButton variant="outline" color="success" className="d-flex align-items-center">
+                    <CIcon icon={cilPlus} className="me-1" /> Thêm mới thành phần lương
+                 </CButton>
+            </div>
+
+            {/* Bảng dữ liệu trong modal */}
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                <CTable hover responsive align="middle" className="mb-0">
+                    <CTableHead color="light" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                        <CTableRow>
+                            <CTableHeaderCell className="w-1">
+                                <CFormCheck onChange={toggleSelectAll} checked={selectedIds.length === AVAILABLE_COMPONENTS.length && AVAILABLE_COMPONENTS.length > 0} />
+                            </CTableHeaderCell>
+                            <CTableHeaderCell>Mã thành phần</CTableHeaderCell>
+                            <CTableHeaderCell>Tên thành phần</CTableHeaderCell>
+                            <CTableHeaderCell>Loại thành phần</CTableHeaderCell>
+                            <CTableHeaderCell>Tính chất</CTableHeaderCell>
+                        </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                        {AVAILABLE_COMPONENTS
+                            .filter(item => item.name.toLowerCase().includes(modalSearch.toLowerCase()) || item.code.toLowerCase().includes(modalSearch.toLowerCase()))
+                            .map(item => (
+                            <CTableRow key={item.id} onClick={() => toggleSelectComponent(item.id)} style={{ cursor: 'pointer' }}>
+                                <CTableDataCell onClick={(e) => e.stopPropagation()}>
+                                    <CFormCheck checked={selectedIds.includes(item.id)} onChange={() => toggleSelectComponent(item.id)} />
+                                </CTableDataCell>
+                                <CTableDataCell>{item.code}</CTableDataCell>
+                                <CTableDataCell className="fw-semibold">{item.name}</CTableDataCell>
+                                <CTableDataCell>{item.type}</CTableDataCell>
+                                <CTableDataCell>{item.nature}</CTableDataCell>
+                            </CTableRow>
+                        ))}
+                    </CTableBody>
+                </CTable>
+            </div>
+        </CModalBody>
+        <CModalFooter className="justify-content-between bg-light">
+            <div className="d-flex align-items-center gap-2">
+                <span className="small text-muted">Tổng số bản ghi: <strong>{AVAILABLE_COMPONENTS.length}</strong></span>
+            </div>
+            <div className="d-flex gap-2">
+                <CButton color="white" className="border" onClick={() => setShowAddModal(false)}>Hủy bỏ</CButton>
+                <CButton color="success" className="text-white" disabled={selectedIds.length === 0} onClick={handleApplySelection}>
+                    Áp dụng {selectedIds.length > 0 && `(${selectedIds.length})`}
+                </CButton>
+            </div>
         </CModalFooter>
       </CModal>
+
+      {/* MODAL XÁC NHẬN LƯU (Cũ) */}
+      <CModal visible={showSaveConfirm} onClose={() => setShowSaveConfirm(false)} alignment="center">
+        <CModalHeader><CModalTitle>Xác nhận lưu</CModalTitle></CModalHeader>
+        <CModalBody className="text-center py-4">
+            <CIcon icon={cilWarning} size="4xl" className="text-warning mb-3"/>
+            <p className="fs-5">Bạn có chắc chắn muốn lưu mẫu bảng lương này không?</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" variant="ghost" onClick={() => setShowSaveConfirm(false)}>Hủy bỏ</CButton>
+          <CButton color="success" className="text-white" onClick={confirmSave}>Đồng ý</CButton>
+        </CModalFooter>
+      </CModal>
+
     </div>
   )
 }

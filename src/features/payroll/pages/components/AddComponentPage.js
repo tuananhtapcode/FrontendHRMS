@@ -1,50 +1,111 @@
-import { cilCalculator, cilInfo, cilSave } from '@coreui/icons'
+import { cilSave, cilWarning, cilArrowLeft } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import {
   CAlert, CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormCheck,
-  CFormInput, CFormLabel, CFormSelect, CFormTextarea, CInputGroup, CInputGroupText, CRow,
+  CFormInput, CFormLabel, CFormSelect, CFormTextarea,
+  CModal,
+  CModalBody, CModalFooter,
+  CModalHeader, CModalTitle,
+  CRow,
+  CToast,
+  CToastBody,
+  CCloseButton,
+  CToaster
 } from '@coreui/react'
-import { useMemo, useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../scss/components-page.scss'
 
+// Import API thật
+import { createSalaryComponent } from '../../api/salaryComponentApi'
+
 export default function AddComponentPage() {
   const navigate = useNavigate()
+  const toaster = useRef()
 
-  const unitOptions = useMemo(() => ['—', 'Thông tin nhân viên', 'Thuế TNCN', 'Lương'], [])
-  const typeOptions = useMemo(() => ['Thu nhập', 'Phụ cấp', 'Khấu trừ', 'Bảo hiểm – Công đoàn', 'Lương', 'Khác'], [])
-  const valueTypeOptions = useMemo(() => ['Tiền tệ', 'Số', 'Chữ', 'Ngày'], [])
+  const initialForm = {
+    name: '',
+    code: '',
+    type: 'earning', // ✅ Sửa mặc định thành EARNING (theo Enum backend)
+    rawAmount: 0,    
+    description: '',
+    isActive: true   
+  }
 
-  const [form, setForm] = useState({
-    name: '', code: '', unit: unitOptions[0], kind: typeOptions[0],
-    taxBehavior: 'chiuthue', norm: '', allowExceedNorm: false,
-    valueType: valueTypeOptions[0], valueMode: 'formula', copyScope: 'Trong cùng đơn vị công tác',
-    formula: '', description: '', showOnPayslip: 'yes',
-  })
+  const [form, setForm] = useState(initialForm)
+  const [formattedAmount, setFormattedAmount] = useState('0 ₫') 
+  
   const [submitting, setSubmitting] = useState(false)
-  const [touched, setTouched] = useState(false)
-  const [message, setMessage] = useState(null)
+  const [message, setMessage] = useState(null) 
+  const [toast, setToast] = useState(0)        
 
-  const requiredInvalid = !form.name.trim()
+  const [visibleModal, setVisibleModal] = useState(false)
+  const [saveAction, setSaveAction] = useState('save') 
+
   const update = (patch) => setForm((f) => ({ ...f, ...patch }))
 
-  const handleSave = async (mode = 'save') => {
-    setTouched(true)
+  // Xử lý nhập tiền
+  const handleAmountChange = (e) => {
+  const n = e.target.valueAsNumber // số thật
+  const safe = Number.isFinite(n) ? n : 0
+
+  update({ rawAmount: safe })
+  setFormattedAmount(
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(safe)
+  )
+}
+
+
+  const handleClickSave = (mode) => {
     setMessage(null)
-    if (requiredInvalid) {
-      setMessage({ type: 'danger', text: 'Vui lòng nhập Tên thành phần.' })
-      return
+    if (!form.name.trim()) { setMessage({ type: 'danger', text: 'Vui lòng nhập Tên thành phần.' }); return }
+    if (!form.code.trim()) { setMessage({ type: 'danger', text: 'Vui lòng nhập Mã thành phần.' }); return }
+    setSaveAction(mode)
+    setVisibleModal(true)
+  }
+
+  // ✅ LOGIC QUAN TRỌNG ĐÃ FIX:
+  const handleConfirmSave = async () => {
+    setVisibleModal(false)
+    setSubmitting(true)
+
+    // Chuẩn bị payload chuẩn
+    const payload = {
+      code: form.code,
+      name: form.name,
+      type: form.type,
+      amount: Number.isFinite(form.rawAmount) ? form.rawAmount : 0,
+      description: form.description,
+      isActive: form.isActive
     }
+
+
+    // Debug: Bạn có thể F12 xem console để chắc chắn payload đúng
+    console.log("Sending Payload:", payload) 
+
     try {
-      setSubmitting(true)
-      // TODO: call API create here
-      await new Promise((r) => setTimeout(r, 300))
-      setMessage({ type: 'success', text: 'Đã lưu thành phần lương.' })
-      if (mode === 'save') navigate('/payroll/components')
-      if (mode === 'save_add') {
-        setForm((f) => ({ ...f, name: '', code: '', formula: '', description: '' }))
-        setTouched(false)
+      await createSalaryComponent(payload)
+
+      const successToast = (
+        <CToast autohide={true} delay={3000} color="success" className="text-white align-items-center">
+          <div className="d-flex">
+            <CToastBody>Thêm mới thành công!</CToastBody>
+            <CCloseButton className="me-2 m-auto" white />
+          </div>
+        </CToast>
+      )
+      setToast(successToast)
+
+      if (saveAction === 'save') {
+        setTimeout(() => navigate('/payroll/components'), 1000)
+      } else {
+        setForm(initialForm)
+        setFormattedAmount('0 ₫')
       }
+
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Có lỗi xảy ra.'
+      setMessage({ type: 'danger', text: errorMsg })
     } finally {
       setSubmitting(false)
     }
@@ -52,18 +113,35 @@ export default function AddComponentPage() {
 
   return (
     <div className="payroll-components">
+      <CToaster ref={toaster} push={toast} placement="top-end" />
+
+      <CModal alignment="center" visible={visibleModal} onClose={() => setVisibleModal(false)}>
+        <CModalHeader><CModalTitle>Xác nhận lưu</CModalTitle></CModalHeader>
+        <CModalBody className="text-center py-4">
+            <CIcon icon={cilWarning} size="4xl" className="text-warning mb-3"/>
+            <p>Bạn có chắc chắn muốn thêm thành phần lương <strong>{form.name}</strong>?</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" variant="ghost" onClick={() => setVisibleModal(false)}>Hủy bỏ</CButton>
+          <CButton color="success" className="text-white" onClick={handleConfirmSave} disabled={submitting}>
+            {submitting ? 'Đang lưu...' : 'Đồng ý'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
       <div className="pc-header" style={{ paddingTop: 0, paddingBottom: '0.5rem' }}>
-        <div className="left"><div className="title">Thêm thành phần</div></div>
+        <div className="left">
+            <div className="d-flex align-items-center gap-2">
+                <CButton color="light" variant="ghost" className="text-secondary p-0" onClick={() => navigate('/payroll/components')}>
+                    <CIcon icon={cilArrowLeft} size="xl"/>
+                </CButton>
+                <div className="title mb-0">Thêm thành phần lương</div>
+            </div>
+        </div>
         <div className="right" style={{ display: 'flex', gap: '.5rem' }}>
-          <CButton color="secondary" variant="outline" onClick={() => navigate('/payroll/components')}>
-            Hủy bỏ
-          </CButton>
-          <CButton color="success" variant="outline" disabled={submitting} onClick={() => handleSave('save_add')}>
-            Lưu và thêm
-          </CButton>
-          <CButton color="success" disabled={submitting} onClick={() => handleSave('save')}>
-            <CIcon icon={cilSave} className="me-1" /> Lưu
-          </CButton>
+          <CButton color="secondary" variant="outline" onClick={() => navigate('/payroll/components')}>Hủy bỏ</CButton>
+          <CButton color="success" variant="outline" disabled={submitting} onClick={() => handleClickSave('save_add')}>Lưu và thêm</CButton>
+          <CButton color="success" className="text-white" disabled={submitting} onClick={() => handleClickSave('save')}><CIcon icon={cilSave} className="me-1" /> Lưu</CButton>
         </div>
       </div>
 
@@ -71,118 +149,63 @@ export default function AddComponentPage() {
         <CCardBody>
           {message && <CAlert color={message.type} className="mb-3 py-2">{message.text}</CAlert>}
 
-          <CForm className="payroll-form">
+          <CForm className="payroll-form" style={{ maxWidth: '1000px' }}>
             <CContainer fluid>
-              <CRow className="g-3 align-items-center">
-                <CCol md={2}><CFormLabel className="fw-semibold">Tên thành phần <span className="text-danger">*</span></CFormLabel></CCol>
-                <CCol md={6}><CFormInput value={form.name} onChange={(e) => update({ name: e.target.value })} invalid={touched && requiredInvalid} /></CCol>
+              <CRow className="g-3 align-items-center mb-3">
+                <CCol md={3}><CFormLabel className="fw-bold mb-0">Tên thành phần <span className="text-danger">*</span></CFormLabel></CCol>
+                <CCol md={9}><CFormInput value={form.name} onChange={(e) => update({ name: e.target.value })} placeholder="Ví dụ: Phụ cấp ăn trưa" /></CCol>
               </CRow>
 
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Mã thành phần</CFormLabel></CCol>
-                <CCol md={3}><CFormInput value={form.code} onChange={(e) => update({ code: e.target.value })} placeholder="Nhập mã viết liền" /></CCol>
-              </CRow>
-
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Đơn vị áp dụng</CFormLabel></CCol>
-                <CCol md={3}>
-                  <CFormSelect value={form.unit} onChange={(e) => update({ unit: e.target.value })}>
-                    {unitOptions.map((o) => <option key={o}>{o}</option>)}
-                  </CFormSelect>
+              <CRow className="g-3 align-items-center mb-3">
+                <CCol md={3}><CFormLabel className="fw-bold mb-0">Mã thành phần <span className="text-danger">*</span></CFormLabel></CCol>
+                <CCol md={9}>
+                    <CFormInput value={form.code} onChange={(e) => update({ code: e.target.value.toUpperCase() })} placeholder="Ví dụ: PC_AN" />
                 </CCol>
               </CRow>
 
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Loại thành phần</CFormLabel></CCol>
+              <CRow className="g-3 align-items-center mb-3">
+                <CCol md={3}><CFormLabel className="fw-bold mb-0">Loại thành phần</CFormLabel></CCol>
                 <CCol md={4}>
-                  <CFormSelect value={form.kind} onChange={(e) => update({ kind: e.target.value })}>
-                    {typeOptions.map((o) => <option key={o}>{o}</option>)}
+                  <CFormSelect value={form.type} onChange={(e) => update({ type: e.target.value })}>
+                    {/* Value phải khớp với Enum Backend: EARNING/DEDUCTION */}
+                    <option value="earning">Thu nhập (Earning)</option>
+                    <option value="deduction">Khấu trừ (Deduction)</option>
                   </CFormSelect>
                 </CCol>
               </CRow>
 
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Tính chất</CFormLabel></CCol>
-                <CCol md={8} className="d-flex align-items-center gap-3 flex-wrap">
-                  <CFormSelect className="w-auto" value={form.kind} onChange={(e) => update({ kind: e.target.value })}>
-                    {typeOptions.map((o) => <option key={o}>{o}</option>)}
-                  </CFormSelect>
-                  <div className="vr" />
-                  <CFormCheck inline type="radio" name="taxBehavior" label="Chịu thuế" checked={form.taxBehavior==='chiuthue'} onChange={() => update({ taxBehavior:'chiuthue' })}/>
-                  <CFormCheck inline type="radio" name="taxBehavior" label="Miễn thuế toàn phần" checked={form.taxBehavior==='mienthue_toanphan'} onChange={() => update({ taxBehavior:'mienthue_toanphan' })}/>
-                  <CFormCheck inline type="radio" name="taxBehavior" label="Miễn thuế một phần" checked={form.taxBehavior==='mienthue_motphan'} onChange={() => update({ taxBehavior:'mienthue_motphan' })}/>
+              <CRow className="g-3 align-items-center mb-3">
+                <CCol md={3}><CFormLabel className="fw-bold mb-0">Giá trị mặc định</CFormLabel></CCol>
+                <CCol md={4}>
+                    <CFormInput
+                      type="number"
+                      value={form.rawAmount}
+                      onChange={handleAmountChange}
+                      min={0}
+                    />
+
+                    <div className="form-text text-primary fw-semibold">{formattedAmount}</div>
                 </CCol>
               </CRow>
 
-              <CRow className="g-3 mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Định mức</CFormLabel></CCol>
-                <CCol md={6}>
-                  <CFormTextarea rows={2} placeholder="Tự động gợi ý công thức và tham số khi gõ" value={form.norm} onChange={(e) => update({ norm:e.target.value })}/>
-                  <CFormCheck className="mt-2" label="Cho phép giá trị tính vượt quá định mức" checked={form.allowExceedNorm} onChange={(e) => update({ allowExceedNorm:e.target.checked })}/>
+              <CRow className="g-3 mb-3">
+                <CCol md={3}><CFormLabel className="fw-bold mb-0">Mô tả</CFormLabel></CCol>
+                <CCol md={9}><CFormTextarea rows={3} value={form.description} onChange={(e)=>update({ description:e.target.value })}/></CCol>
+              </CRow>
+
+              <div className="border-bottom my-4"></div>
+
+              <CRow className="g-3 align-items-center">
+                <CCol md={3}><CFormLabel className="fw-bold mb-0">Trạng thái</CFormLabel></CCol>
+                <CCol md={9} className="d-flex align-items-center gap-4">
+                  <CFormCheck type="radio" name="status" label="Đang theo dõi" checked={form.isActive === true} onChange={()=>update({ isActive: true })} />
+                  <CFormCheck type="radio" name="status" label="Ngừng theo dõi" checked={form.isActive === false} onChange={()=>update({ isActive: false })} />
                 </CCol>
-              </CRow>
-
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Kiểu giá trị</CFormLabel></CCol>
-                <CCol md={3}>
-                  <CFormSelect value={form.valueType} onChange={(e) => update({ valueType:e.target.value })}>
-                    {valueTypeOptions.map((o) => <option key={o}>{o}</option>)}
-                  </CFormSelect>
-                </CCol>
-              </CRow>
-
-              <CRow className="g-3 mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Giá trị</CFormLabel></CCol>
-                <CCol md={8}>
-                  <div className="d-flex flex-column gap-2">
-                    <div className="d-flex align-items-center gap-2 flex-wrap">
-                      <CFormCheck type="radio" name="valueMode" label="Tự động cộng/giống giá trị của các nhân viên" checked={form.valueMode==='copy'} onChange={() => update({ valueMode:'copy' })}/>
-                      <CFormSelect className="w-auto" disabled={form.valueMode!=='copy'} value={form.copyScope} onChange={(e)=>update({ copyScope:e.target.value })}>
-                        <option>Trong cùng đơn vị công tác</option><option>Toàn công ty</option>
-                      </CFormSelect>
-                      <CInputGroupText className="bg-transparent border-0 p-0 ms-1"><CIcon icon={cilInfo}/></CInputGroupText>
-                    </div>
-
-                    <div>
-                      <CFormCheck type="radio" name="valueMode" label="Tính theo công thức tự đặt" checked={form.valueMode==='formula'} onChange={() => update({ valueMode:'formula' })}/>
-                      <CInputGroup className="mt-2">
-                        <CFormTextarea rows={2} placeholder="Tự động gợi ý công thức và tham số khi gõ" disabled={form.valueMode!=='formula'} value={form.formula} onChange={(e)=>update({ formula:e.target.value })}/>
-                        <CInputGroupText role="button" title="Trợ giúp công thức"><CIcon icon={cilCalculator}/></CInputGroupText>
-                      </CInputGroup>
-                    </div>
-                  </div>
-                </CCol>
-              </CRow>
-
-              <CRow className="g-3 mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Mô tả</CFormLabel></CCol>
-                <CCol md={6}><CFormTextarea rows={2} value={form.description} onChange={(e)=>update({ description:e.target.value })}/></CCol>
-              </CRow>
-
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Hiển thị trên phiếu lương</CFormLabel></CCol>
-                <CCol md={6} className="d-flex align-items-center gap-3">
-                  <CFormCheck type="radio" name="show" label="Có" checked={form.showOnPayslip==='yes'} onChange={()=>update({ showOnPayslip:'yes' })}/>
-                  <CFormCheck type="radio" name="show" label="Không" checked={form.showOnPayslip==='no'} onChange={()=>update({ showOnPayslip:'no' })}/>
-                  <CFormCheck type="radio" name="show" label="Chỉ hiển thị nếu giá trị khác 0" checked={form.showOnPayslip==='nonzero'} onChange={()=>update({ showOnPayslip:'nonzero' })}/>
-                </CCol>
-              </CRow>
-
-              <CRow className="g-3 align-items-center mt-1">
-                <CCol md={2}><CFormLabel className="fw-semibold">Nguồn tạo</CFormLabel></CCol>
-                <CCol md={6} className="text-body">Tự thêm</CCol>
               </CRow>
             </CContainer>
           </CForm>
         </CCardBody>
       </CCard>
-
-      <style>{`
-        .payroll-form .vr { width:1px; height:24px; background: var(--cui-border-color); }
-        .payroll-form .form-label { margin-bottom: .25rem; }
-        .payroll-form .form-select, .payroll-form .form-control { max-width: 100%; }
-        @media (min-width: 992px){ .payroll-form .form-label { display:flex; justify-content:flex-start; } }
-      `}</style>
     </div>
   )
 }

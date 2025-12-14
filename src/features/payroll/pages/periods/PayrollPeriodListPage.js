@@ -1,149 +1,126 @@
-// src/features/payroll/pages/periods/PayrollPeriodListPage.jsx
-import {
-  CBadge,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-} from '@coreui/react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchPayrollPeriods } from '../../api/periodApi'
+import {
+  CCard, CCardHeader, CCardBody, CTable, CTableHead, CTableRow, 
+  CTableHeaderCell, CTableBody, CTableDataCell, CBadge, CButton, CSpinner 
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilArrowRight, cilPlus, cilArrowLeft } from '@coreui/icons'
+import { fetchPayrollPeriods } from '../../api/payrollApi'
 
-const statusColor = (status) => {
-  const s = status?.toLowerCase() || ''
-  if (s.includes('duyệt')) return 'success'
-  if (s.includes('đóng') || s.includes('đã chi')) return 'secondary'
-  if (s.includes('nháp')) return 'warning'
-  return 'info'
-}
-
-export default function PayrollPeriodListPage() {
-  const [periods, setPeriods] = useState([])
-  const [loading, setLoading] = useState(true)
+const PayrollPeriodListPage = () => {
   const navigate = useNavigate()
+  const [payrollPeriods, setPayrollPeriods] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let ignore = false
-    async function load() {
-      try {
-        const data = await fetchPayrollPeriods()
-        if (!ignore) setPeriods(data || [])
-      } finally {
-        if (!ignore) setLoading(false)
-      }
-    }
-    load()
-    return () => {
-      ignore = true
-    }
+    loadData()
   }, [])
 
-  const gotoDetail = (p) => {
-    navigate(`/payroll/periods/${p.id}`, {
-      state: { period: p },
-    })
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const data = await fetchPayrollPeriods()
+      const sortedData = (data || []).sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+      setPayrollPeriods(sortedData)
+    } catch (error) {
+      console.error("Lỗi tải kỳ lương:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-'
+    const [y, m, d] = dateStr.split('-')
+    return `${d}/${m}/${y}`
   }
 
   return (
-    <CCard>
-      <CCardHeader className="d-flex justify-content-between align-items-center">
-        <div>
-          <div className="fw-semibold">Quản lý kỳ lương</div>
-          <div className="text-medium-emphasis small">
-            Danh sách tất cả kỳ lương (mới nhất ở trên cùng)
-          </div>
+    <div className="payroll-period-list">
+      {/* ✅ 1. NÚT BACK (Đã sửa: Dùng div để không có hiệu ứng hover button) */}
+      <div className="mb-3">
+        <div 
+          role="button"
+          className="d-inline-flex align-items-center text-dark fw-semibold"
+          style={{ cursor: 'pointer', userSelect: 'none' }} 
+          onClick={() => navigate('/payroll')}
+        >
+          <CIcon icon={cilArrowLeft} className="me-2"/> 
+          Quay lại Tổng quan
         </div>
+      </div>
 
-        <div className="d-flex gap-2">
-          <CButton
-            color="secondary"
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/payroll')}
-          >
-            Quay lại tổng quan
+      <CCard className="mb-4 shadow-sm border-0">
+        <CCardHeader className="d-flex justify-content-between align-items-center bg-white py-3">
+          <h5 className="m-0 fw-bold text-primary">Quản lý Kỳ Lương</h5>
+          <CButton color="primary" size="sm" onClick={() => console.log("Mở modal tạo mới")}>
+            <CIcon icon={cilPlus} className="me-2" /> Tạo kỳ lương mới
           </CButton>
-
-          {/* sau này nếu muốn có nút tạo mới thì bật cái này */}
-          {/* 
-          <CButton color="primary" size="sm">
-            Tạo kỳ lương mới
-          </CButton> 
-          */}
-        </div>
-      </CCardHeader>
-
-      <CCardBody>
-        {loading ? (
-          <div>Đang tải dữ liệu...</div>
-        ) : (
-          <CTable hover align="middle">
+        </CCardHeader>
+        
+        <CCardBody className="p-0">
+          <CTable hover responsive align="middle" className="mb-0">
             <CTableHead color="light">
               <CTableRow>
-                <CTableHeaderCell>Tên kỳ lương</CTableHeaderCell>
-                <CTableHeaderCell>Trạng thái</CTableHeaderCell>
-                <CTableHeaderCell>Chu kỳ</CTableHeaderCell>
+                <CTableHeaderCell className="ps-4">Tên kỳ lương</CTableHeaderCell>
+                <CTableHeaderCell>Thời gian</CTableHeaderCell>
                 <CTableHeaderCell>Ngày chi trả</CTableHeaderCell>
-                <CTableHeaderCell className="text-end">
-                  SL Nhân viên
-                </CTableHeaderCell>
-                <CTableHeaderCell className="text-end">
-                  Tổng thực chi
-                </CTableHeaderCell>
-                <CTableHeaderCell>Người lập</CTableHeaderCell>
-                <CTableHeaderCell className="text-center">
-                  Hành động
-                </CTableHeaderCell>
+                <CTableHeaderCell className="text-center">Trạng thái</CTableHeaderCell>
+                <CTableHeaderCell className="text-end pe-4">Hành động</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
+            
             <CTableBody>
-              {periods.map((p) => (
-                <CTableRow key={p.id}>
-                  <CTableDataCell
-                    role="button"
-                    className="text-primary fw-semibold"
-                    onClick={() =>
-                      navigate(`/payroll/periods/${p.id}`, { state: { period: p } })
-                    }
-                  >
-                    {p.name}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CBadge color={statusColor(p.status)}>{p.status}</CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell>{p.timeRange}</CTableDataCell>
-                  <CTableDataCell>{p.paymentDate}</CTableDataCell>
-                  <CTableDataCell className="text-end">
-                    {p.headcount?.toLocaleString('vi-VN')}
-                  </CTableDataCell>
-                  <CTableDataCell className="text-end">
-                    {p.totalPaid?.toLocaleString('vi-VN')} đ
-                  </CTableDataCell>
-                  <CTableDataCell>{p.createdBy}</CTableDataCell>
-                  <CTableDataCell className="text-center">
-                    <CButton
-                      size="sm"
-                      color="link"
-                      onClick={() =>
-                        navigate(`/payroll/periods/${p.id}`, { state: { period: p } })
-                      }
-                    >
-                      Xem chi tiết
-                    </CButton>
+              {loading ? (
+                <CTableRow>
+                  <CTableDataCell colSpan="5" className="text-center py-5">
+                    <CSpinner color="primary" size="sm"/>
                   </CTableDataCell>
                 </CTableRow>
-              ))}
+              ) : payrollPeriods.length === 0 ? (
+                <CTableRow>
+                  <CTableDataCell colSpan="5" className="text-center py-4 text-muted">
+                    Chưa có kỳ lương nào.
+                  </CTableDataCell>
+                </CTableRow>
+              ) : (
+                payrollPeriods.map((period) => (
+                  <CTableRow key={period.payrollPeriodId || period.id}>
+                    <CTableDataCell className="ps-4 fw-semibold">
+                      {period.name}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {formatDate(period.startDate)} - {formatDate(period.endDate)}
+                    </CTableDataCell>
+                    <CTableDataCell>{formatDate(period.paymentDate)}</CTableDataCell>
+                    <CTableDataCell className="text-center">
+                      <CBadge color={period.isClosed ? 'success' : 'warning'} shape="rounded-pill">
+                        {period.isClosed ? 'Đã đóng' : 'Đang mở'}
+                      </CBadge>
+                    </CTableDataCell>
+                    
+                    {/* Nút Xem chi tiết (giữ nguyên style bình thường) */}
+                    <CTableDataCell className="text-end pe-4">
+                      <CButton 
+                        color="info"       
+                        variant="outline"  
+                        size="sm"
+                        className="fw-semibold"
+                        onClick={() => navigate(`/payroll/periods/${period.payrollPeriodId || period.id}`)}
+                      >
+                        Chi tiết <CIcon icon={cilArrowRight} size="sm" className="ms-1"/>
+                      </CButton>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))
+              )}
             </CTableBody>
           </CTable>
-        )}
-      </CCardBody>
-    </CCard>
+        </CCardBody>
+      </CCard>
+    </div>
   )
 }
+
+export default PayrollPeriodListPage
