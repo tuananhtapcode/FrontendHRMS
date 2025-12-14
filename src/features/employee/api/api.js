@@ -113,7 +113,7 @@ const getIApproveOvertimeRequestPending = async (page, size) => {
   try {
     const res = await api.get('/api/v1/overtime-requests/pending', { params: { page, size } })
     console.log(res)
-    return { data: res.data.data.jobPositionResponses, totalPages: res.data.data.totalPages }
+    return { data: res.data.content, totalPages: res.data.totalPages }
   } catch (error) {
     throw error
   }
@@ -122,7 +122,7 @@ const getIApproveOvertimeRequestApproved = async (page, size) => {
   try {
     const res = await api.get('/api/v1/overtime-requests/approved', { params: { page, size } })
     console.log(res)
-    return { data: res.data.data.jobPositionResponses, totalPages: res.data.data.totalPages }
+    return { data: res.data.content, totalPages: res.data.totalPages }
   } catch (error) {
     throw error
   }
@@ -131,7 +131,7 @@ const getIApproveOvertimeRequestRejected = async (page, size) => {
   try {
     const res = await api.get('/api/v1/overtime-requests/rejected', { params: { page, size } })
     console.log(res)
-    return { data: res.data.data.jobPositionResponses, totalPages: res.data.data.totalPages }
+    return { data: res.data.content, totalPages: res.data.totalPages }
   } catch (error) {
     throw error
   }
@@ -330,9 +330,9 @@ const getTimeSheet = async () => {
     const month = now.getMonth() + 1
     const year = now.getFullYear()
 
-    const res = await api.get('/api/v1/timesheets/my-timesheet', { params: { month, year } })
+    const res = await api.get('/api/v1/timesheets/me', { params: { month, year } })
     console.log(res)
-    return res.data
+    return res.data.data.dailyRecords
   } catch (error) {
     throw error
   }
@@ -365,10 +365,24 @@ const getMyEmployeeInformation = async () => {
     throw error
   }
 }
+const getEmployeeShiftPlan = async (id, month, year) => {
+  try {
+    const startDate = dayjs(`${year}-${month}-01`).startOf('day').format('YYYY-MM-DD')
+    const endDate = dayjs(`${year}-${month}-01`).endOf('month').format('YYYY-MM-DD')
+
+    const res = await api.get(`/api/v1/shift-assignments/employee/${id}`, {
+      params: { startDate, endDate },
+    })
+    return res.data.data
+  } catch (error) {
+    throw error
+  }
+}
 
 export {
   /// Employee Information
   getMyEmployeeInformation,
+  getEmployeeShiftPlan,
   /// CHECK-IN / CHECK-OUT
   checkIn,
   checkOut,

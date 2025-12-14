@@ -2,18 +2,48 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import { CButton, CButtonGroup, CCard, CCol, CRow } from '@coreui/react'
 import { useEffect, useRef, useState } from 'react'
-import { cil4k } from '@coreui/icons'
-import { EmployeeCard } from '../../../components/zReuse/zComponents'
 import { getTimeSheet } from '../api/api'
 
 const TimesheetTimesheetGrid = () => {
   const [calendarView, setCalendarView] = useState('dayGridMonth')
   const calendarRef = useRef()
+  const [events, setEvents] = useState([])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await getTimeSheet()
+        const formattedEvents = res.map((record) => {
+          let bgColor = '#cce5ff'
+          switch (record.status) {
+            case 'PRESENT':
+              bgColor = '#cce5ff'
+              break
+            case 'LATE':
+              bgColor = '#fff3b0'
+              break
+            case 'LEAVE_PAID':
+              bgColor = '#e3d7ff'
+              break
+            case 'ABSENT':
+              bgColor = '#ffb3b3'
+              break
+            default:
+              bgColor = '#e0e0e0'
+          }
+          return {
+            title: record.status,
+            date: record.date,
+            backgroundColor: bgColor,
+            borderColor: bgColor,
+            textColor: '#000',
+            extendedProps: {
+              hoursWorked: record.hoursWorked,
+              hoursOvertime: record.hoursOvertime,
+            },
+          }
+        })
+        setEvents(formattedEvents)
       } catch (error) {
         console.error(error)
       }
@@ -54,50 +84,30 @@ const TimesheetTimesheetGrid = () => {
         </CCol>
       </CRow>
 
-      <CRow className="mb-4">
-        <CCol>
-          <EmployeeCard
-            title="Tổng công hưởng lương"
-            quantity={0}
-            icon={cil4k}
-            backgroundIcon="#e8f0ff"
-          />
-        </CCol>
-        <CCol>
-          <EmployeeCard
-            title="Tổng giờ làm thêm"
-            quantity={0}
-            icon={cil4k}
-            backgroundIcon="#e8fff3"
-          />
-        </CCol>
-        <CCol>
-          <EmployeeCard
-            title="Số lần đi muộn / về sớm"
-            quantity={0}
-            icon={cil4k}
-            backgroundIcon="#fff6e8"
-          />
-        </CCol>
-        <CCol>
-          <EmployeeCard
-            title="Tổng số ca nghỉ"
-            quantity={0}
-            icon={cil4k}
-            backgroundIcon="#ffe8e8"
-          />
-        </CCol>
-      </CRow>
-
       <CCard className="p-3 shadow-sm">
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin]}
           initialView={calendarView}
-          events={[
-            { title: 'event 1', date: '2025-11-22' },
-            { title: 'event 2', date: '2025-11-23' },
-          ]}
+          events={events}
+          eventContent={(arg) => {
+            const { extendedProps, title } = arg.event
+            const { hoursWorked, hoursOvertime } = extendedProps
+            return (
+              <div
+                style={{
+                  padding: '2px',
+                  borderRadius: 4,
+                  backgroundColor: arg.event.backgroundColor,
+                }}
+              >
+                <div style={{ fontWeight: 'bold' }}>{title}</div>
+                <div style={{ fontSize: '0.75rem', color: '#555' }}>
+                  {hoursWorked}h + OT {hoursOvertime}h
+                </div>
+              </div>
+            )
+          }}
         />
       </CCard>
     </>

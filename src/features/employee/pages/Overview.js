@@ -34,7 +34,9 @@ const Overview = () => {
             <CRow className="align-items-stretch h-100">
               <CCol>
                 <CCard className="h-100">
-                  <CCardHeader className="fw-bold mb-2">Cần thực hiện</CCardHeader>
+                  <CCardHeader className="fw-bold mb-2">
+                    Cần thực hiện (Đang phát triển)
+                  </CCardHeader>
                   <CCardBody className="d-flex flex-column justify-content-center align-items-center text-center text-muted">
                     <CIcon icon={cilList} size="xl" className="mb-2 text-secondary" />
                     <div>Không có công việc cần thực hiện</div>
@@ -43,7 +45,9 @@ const Overview = () => {
               </CCol>
               <CCol>
                 <CCard className="h-100">
-                  <CCardHeader className="fw-bold mb-2">Chờ người khác duyệt</CCardHeader>
+                  <CCardHeader className="fw-bold mb-2">
+                    Chờ người khác duyệt (Đang phát triển)
+                  </CCardHeader>
                   <CCardBody className="d-flex flex-column justify-content-center align-items-center text-center text-muted">
                     <CIcon icon={cilBookmark} size="xl" className="mb-2 text-secondary" />
                     <div>Không có công việc cần chờ duyệt</div>
@@ -77,14 +81,26 @@ const Overview = () => {
           <CCard className="p-4 shadow-sm rounded-3xl border-0">
             <CCardTitle className="text-xl fw-bold mb-3">Tiện ích</CCardTitle>
             <div className="d-flex flex-wrap gap-2">
-              <CButton color="primary" className="d-flex align-items-center gap-2">
-                <CIcon icon={cilNotes} /> Tạo đơn
+              <CButton
+                color="primary"
+                className="d-flex align-items-center gap-2"
+                href="/#/employee/profile"
+              >
+                <CIcon icon={cilNotes} /> Hồ sơ
               </CButton>
-              <CButton color="success" className="d-flex align-items-center gap-2">
-                <CIcon icon={cilCalendarCheck} /> Kiểm tra công
+              <CButton
+                color="success"
+                className="d-flex align-items-center gap-2"
+                href="/#/employee/timesheet/timekeeping-remote"
+              >
+                <CIcon icon={cilCalendarCheck} /> Chấm công
               </CButton>
-              <CButton color="info" className="d-flex align-items-center gap-2">
-                <CIcon icon={cilCalendar} /> Xem lịch làm việc
+              <CButton
+                color="info"
+                className="d-flex align-items-center gap-2"
+                href="/#/employee/timesheet/shiftplan"
+              >
+                <CIcon icon={cilCalendar} /> Bảng phân ca
               </CButton>
             </div>
           </CCard>
