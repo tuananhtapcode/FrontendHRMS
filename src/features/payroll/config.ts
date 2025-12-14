@@ -2,28 +2,22 @@
 
 /**
  * 🔹 Base URL cho API Payroll
- * - Mặc định: '/api/payroll'
- * - Nếu muốn đổi (ví dụ test với BE ở localhost:8080), bạn chỉ cần:
- *     localStorage.setItem('PAYROLL_API_BASE_URL', 'http://localhost:8080/api/payroll')
+ * - Backend của bạn đang chạy port 1234, nên phải trỏ thẳng vào đó.
+ * - Nếu để '/api/payroll' nó sẽ gọi vào localhost:3000 (Frontend) -> Sai.
  */
 export const PAYROLL_API_BASE_URL =
-  localStorage.getItem('PAYROLL_API_BASE_URL') || '/api/payroll'
+  localStorage.getItem('PAYROLL_API_BASE_URL') || 'http://localhost:1234' // <--- SỬA DÒNG NÀY
 
 /**
  * 🔹 Bật / tắt mock
- * - '1' => dùng mockdata (mặc định)
- * - '0' => tắt mock, gọi API thật
- *
- * Trên Console:
- *   localStorage.setItem('PAYROLL_USE_MOCK', '1')  // bật mock
- *   localStorage.setItem('PAYROLL_USE_MOCK', '0')  // tắt mock
+ * - Logic cũ của bạn bị ngược. Sửa lại: Nếu giá trị là '1' thì mới True.
+ * - Mặc định (?? '0') sẽ là False.
  */
 export const PAYROLL_USE_MOCK =
-  (localStorage.getItem('PAYROLL_USE_MOCK') ?? '1') === '1'
+  (localStorage.getItem('PAYROLL_USE_MOCK') ?? '0') === '1' // <--- SỬA SỐ 0 THÀNH 1 Ở CUỐI
 
 // alias cho tiện dùng ở chỗ khác
 export const PAYROLL_API_BASE = PAYROLL_API_BASE_URL
 export const USE_MOCK = PAYROLL_USE_MOCK
 
-// Log cho dễ debug (có thể xoá nếu bạn không thích log)
 console.log('[payrollConfig] BASE =', PAYROLL_API_BASE_URL, 'USE_MOCK =', PAYROLL_USE_MOCK)
